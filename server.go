@@ -1,8 +1,9 @@
 package rest
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 // Server represents information about a rest server.
@@ -22,5 +23,5 @@ func NewServer(path string, r Routes) {
 }
 
 func (server *Server) listen(router *mux.Router) {
-	http.ListenAndServe(":" + server.Port, router)
+	http.ListenAndServe(":"+server.Port, router)
 }
