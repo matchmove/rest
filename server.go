@@ -15,9 +15,11 @@ type Server struct {
 
 }
 
-func (server *Server) Make(config Config, r Routes) {
-	server.port = config.port
-	server.environment = config.environment
+func NewServer(path string, r Routes) {
+	var server Server
+	if err := NewConfig(path, &server); err != nil {
+		panic(err)
+	}
 	server.listen(NewRouter(r))
 }
 
