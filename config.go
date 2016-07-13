@@ -2,31 +2,33 @@ package rest
 
 import (
 	"io/ioutil"
-	"log"
+
+	"gopkg.in/yaml.v2"
+)
+
+const (
+	// ConfigExt defines the configuration extention that can be used
+	ConfigExt = ".yaml"
 )
 
 // Config represents information about a rest config.
 type Config struct {
-	path        string
-	port        string
-	environment string
+	path string
 }
 
-func (c Config) ReadFile(path string) []byte {
+func (c Config) readFile(path string) ([]byte, error) {
+	return ioutil.ReadFile(path)
+}
 
-	c.path = path
+// NewConfig creates a new instance of configuration from a file
+func NewConfig(path string, out interface{}) error {
+	var c Config
 
-	if contents, err := ioutil.ReadFile(path); err != nil {
-		return contents
-	} else {
-		log.Fatal("test")
+	buff, err := c.readFile(path + ConfigExt)
+
+	if err != nil {
+		return err
 	}
 
-	return nil
+	return yaml.Unmarshal(buff, out)
 }
-//
-//// NewConfig creates a new instance of configuration from a file
-//func NewConfig(path string, i *interface{}) Config {
-//	//c.path = path
-//	//yaml.Unmarshal(c.readFile(path), i)
-//}

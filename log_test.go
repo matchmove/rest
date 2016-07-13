@@ -15,7 +15,11 @@ func TestNewLog(t *testing.T) {
 	lastEntry := l.Entry[len(l.Entry)-1]
 
 	if NewInstanceMsg != lastEntry.Message {
-		t.Error("Expected first entry.Message to be", NewInstanceMsg, ", got", lastEntry.Message)
+		t.Error(
+			"Expected first entry.Message to be `%v`, got `%v`",
+			NewInstanceMsg,
+			lastEntry.Message,
+		)
 	}
 }
 
@@ -24,7 +28,7 @@ func TestGetDateRFC3339(t *testing.T) {
 	now := l.getDate(time.Now())
 
 	if _, e := time.Parse(time.RFC3339, now); e != nil {
-		t.Error("Expected to be RFC3339 format, got", now)
+		t.Errorf("Expected to be RFC3339 format, got `%v`", now)
 	}
 }
 
@@ -47,7 +51,7 @@ func TestPrint(t *testing.T) {
 	}
 
 	if tEntry := fmt.Sprint(msg, i); lastEntry.Message != tEntry {
-		t.Error("Expected entry.Message to be", tEntry, ", got", lastEntry.Message)
+		t.Errorf("Expected entry.Message to be `%v`, got `%v`", tEntry, lastEntry.Message)
 	}
 }
 
@@ -63,7 +67,7 @@ func TestFatal(t *testing.T) {
 	if e, ok := err.(*exec.ExitError); ok && !e.Success() {
 		return
 	}
-	t.Fatalf("Process ran with err %v, want exit status 1", err)
+	t.Errorf("Process ran with err %v, want exit status 1", err)
 }
 
 func TestDump(t *testing.T) {
@@ -89,7 +93,7 @@ func TestDump(t *testing.T) {
 	out := <-outC   // reading our temp stdout
 
 	if out == "" {
-		t.Fatal("Standard output NOT to be \"\" on Dump")
+		t.Error("Standard output NOT to be \"\" on Dump")
 	}
 
 }
