@@ -1,22 +1,29 @@
 package rest
 
+import (
+	"io/ioutil"
+
+	"gopkg.in/yaml.v2"
+)
+
 // Config represents information about a rest config.
 type Config struct {
 	path string
 }
 
-func (c Config) readFile(path string) []byte {
-	//if b, err := ioutil.ReadFile(path); err != nil {
-	//		return b
-	//	} else {
-	//		log.Fatal("test")
-	//	}
-
-	return nil
+func (c Config) readFile(path string) ([]byte, error) {
+	return ioutil.ReadFile(path)
 }
 
 // NewConfig creates a new instance of configuration from a file
-func NewConfig(path string, i *interface{}) Config {
-	//c.path = path
-	//yaml.Unmarshal(c.readFile(path), i)
+func NewConfig(path string, out interface{}) error {
+	var c Config
+
+	buff, err := c.readFile(path)
+
+	if err != nil {
+		return err
+	}
+
+	return yaml.Unmarshal(buff, out)
 }
