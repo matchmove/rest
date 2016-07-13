@@ -3,59 +3,39 @@ package rest
 import (
 	"testing"
 	"net/http"
-	"net/http/httptest"
 	"fmt"
+	"log"
+	"strings"
 )
 
 func TestMake(t *testing.T) {
 
-
-
-	server := Server{}
-	go func (server Server) {
+	go func () {
 		routes := Routes{
 			Route{
 				"index",
 				http.MethodGet,
-				"/",
-				Index,
+				"/testing/{lester}/{category}",
+				GetRequest,
 			},
 		}
+		NewServer("/Users/home/Code/Go/src/bitbucket.org/matchmove/rest/server",routes)
+	}()
 
-		config := Config{
-			path:"",
-			port:"8088",
-			environment:"dev",
-		}
-
-		server.Make(config, routes)
-
-	}(server)
+	request, _ := http.NewRequest("GET", "http://localhost:8085/testing/lester/pogi", strings.NewReader("")) //Create request with JSON body
 
 
-	// TEST 200
-	r, _ := http.NewRequest("GET", "/test", nil)
-	w := httptest.NewRecorder()
 
-	InvokeHandler(http.HandlerFunc(Index), "/test", w, r)
+	response, _ := http.DefaultClient.Do(request)
 
-	// valid test
-	if got, want := w.Code, http.StatusOK; got != want {
-		t.Errorf("%s: response code = %d, want %d", "TestMake", got, want)
-	}
+	log.Println(fmt.Sprint(response.Body))
 
-	// TEST 404
-	r, _ = http.NewRequest("GET", "/", nil)
-	w = httptest.NewRecorder()
-
-	InvokeHandler(http.HandlerFunc(Index), "/test", w, r)
-
-	if got, want := w.Code, http.StatusNotFound; got != want {
-		t.Errorf("%s: response code = %d, want %d", "TestMake", got, want)
-	}
 }
 
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Test Server!\n")
+func GetRequest(w http.ResponseWriter, r *http.Request, data map[string]string) {
+	fmt.Fprint(w, "Welcome!\n")
+	fmt.Fprint(w, data)
+
+	log.Println(data)
 }

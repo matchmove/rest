@@ -2,7 +2,6 @@ package rest
 
 import (
 	"io/ioutil"
-
 	"gopkg.in/yaml.v2"
 )
 
