@@ -4,15 +4,10 @@ import (
 	"net/http"
 )
 
-type Methods struct {
-	Method     string
-	Pattern    string
-	MethodFunc func(http.ResponseWriter, *http.Request)
-}
-
 // Resource represents an interface information about a rest resource.
 type Resource interface {
 	Init()
+
 
 	MainFunc() func(http.ResponseWriter, *http.Request)
 
