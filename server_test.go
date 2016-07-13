@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -76,6 +77,14 @@ func TestNewServer(t *testing.T) {
 	}
 
 	response, err := http.DefaultClient.Do(request)
+	retryTilGiveUp := 100
+	for i := 0; i < retryTilGiveUp; i++ {
+		if err == nil {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+		response, err = http.DefaultClient.Do(request)
+	}
 
 	if err != nil {
 		panic(err)
@@ -113,7 +122,7 @@ func TestSampleRouteWithUrlParamater(t *testing.T) {
 		t.Errorf("Connection response status `%d`, want `%d`", got, want)
 	}
 
-	if got, want := string(body), "welcome"; got != want {
+	if got, want := string(body), TestResource200Message; got != want {
 		t.Errorf("Response body `%s`, want `%s`", got, want)
 	}
 }

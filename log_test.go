@@ -15,7 +15,7 @@ func TestNewLog(t *testing.T) {
 	lastEntry := l.Entry[len(l.Entry)-1]
 
 	if NewInstanceMsg != lastEntry.Message {
-		t.Error(
+		t.Errorf(
 			"Expected first entry.Message to be `%v`, got `%v`",
 			NewInstanceMsg,
 			lastEntry.Message,
