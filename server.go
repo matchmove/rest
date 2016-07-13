@@ -17,6 +17,7 @@ func NewServer(path string, r Routes) {
 	if err := NewConfig(path, &server); err != nil {
 		panic(err)
 	}
+
 	server.listen(NewRouter(r))
 }
 

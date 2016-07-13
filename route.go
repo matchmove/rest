@@ -3,14 +3,12 @@ package rest
 import (
 	"net/http"
 	"github.com/gorilla/mux"
-
 )
 
 type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	MethodFunc  func(http.ResponseWriter, *http.Request, map[string]string)
+	Name     string
+	Pattern  string
+	Controller Resource
 }
 
 type Routes []Route
@@ -21,20 +19,10 @@ func NewRouter(routes Routes) *mux.Router {
 
 	for _, route := range routes {
 		router.
-		Methods(route.Method).
 		Path(route.Pattern).
 		Name(route.Name).
-		Handler(http.HandlerFunc(route.ResourceMiddleware()))
+		Handler(http.HandlerFunc(route.Controller.MainFunc()))
 	}
 
 	return router
-}
-
-
-func (route Route) ResourceMiddleware() func(http.ResponseWriter, *http.Request) {
-	return func (w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		data := mux.Vars(r)
-		route.MethodFunc(w, r, data)
-	}
 }

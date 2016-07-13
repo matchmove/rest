@@ -2,14 +2,30 @@ package rest
 
 import (
 	"net/http"
-	"github.com/gorilla/mux"
 )
 
+type Methods struct {
+	Method     string
+	Pattern    string
+	MethodFunc func(http.ResponseWriter, *http.Request)
+}
 
-type Resource func (w http.ResponseWriter, r *http.Request, vars map[string]string)
+// Resource represents an interface information about a rest resource.
+type Resource interface {
+	Init()
 
-func (resource Resource) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	resource(w, r, vars)
+	MainFunc() func(http.ResponseWriter, *http.Request)
+
+	Get(http.ResponseWriter, *http.Request, map[string]string)
+
+	Put(http.ResponseWriter, *http.Request, map[string]string)
+
+	Post(http.ResponseWriter, *http.Request, map[string]string)
+
+	Patch(http.ResponseWriter, *http.Request, map[string]string)
+
+	Delete(http.ResponseWriter, *http.Request, map[string]string)
+
+	Deinit()
 }
 
