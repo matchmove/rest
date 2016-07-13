@@ -4,9 +4,19 @@ import (
 	"net/http"
 )
 
-// Resource represents information about rest resource.
-type Resource struct {
-	url string
-}
+// Resource represents an interface information about a rest resource.
+type Resource interface {
+	Init()
 
-func (resource Resource) execute(out http.ResponseWriter, in *http.Request) {}
+	Get(http.ResponseWriter, *http.Request)
+
+	Put(http.ResponseWriter, *http.Request)
+
+	Post(http.ResponseWriter, *http.Request)
+
+	Patch(http.ResponseWriter, *http.Request)
+
+	Delete(http.ResponseWriter, *http.Request)
+
+	Deinit()
+}
