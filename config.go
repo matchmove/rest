@@ -10,7 +10,7 @@ import (
 
 const (
 	// ConfigExt defines the configuration extention that can be used
-	ConfigExt = ".yaml"
+	ConfigExt = ".yml"
 )
 
 // Config represents information about a rest config.
