@@ -1,5 +1,6 @@
 package rest
 
+// Test cases are covered in server_test.go
 import (
 	"fmt"
 	"net/http"
