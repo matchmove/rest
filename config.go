@@ -2,6 +2,9 @@ package rest
 
 import (
 	"io/ioutil"
+	"log"
+	"os"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -30,4 +33,36 @@ func NewConfig(path string, out interface{}) error {
 	}
 
 	return yaml.Unmarshal(buff, out)
+}
+
+// NewTempFile creates a configuration file
+func (c Config) NewTempFile(text string) (*os.File, string) {
+	content := []byte(text)
+
+	tmp, err := ioutil.TempFile("", "Config.NewTempFile")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err = tmp.Write(content); err != nil {
+		log.Fatal(err)
+	}
+	if err := tmp.Close(); err != nil {
+		log.Fatal(err)
+	}
+
+	oldPath := tmp.Name()
+
+	if err := os.Rename(oldPath, oldPath+ConfigExt); err != nil {
+		log.Fatal(err)
+	}
+
+	tmp, err = os.Open(oldPath + ConfigExt) // open the new file with ext
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return tmp, oldPath
 }

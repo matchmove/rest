@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -26,46 +28,37 @@ func (c *TestResource) Get() {
 	fmt.Fprintf(c.Write, TestResource200Message)
 }
 
-func createConfigServerFile() (*os.File, string) {
-	content := []byte("port: " + TestServerPort + "\nenvironment: TESTING")
-
-	tmp, err := ioutil.TempFile("", "server.yaml")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err = tmp.Write(content); err != nil {
-		log.Fatal(err)
-	}
-	if err := tmp.Close(); err != nil {
-		log.Fatal(err)
-	}
-
-	oldPath := tmp.Name()
-
-	if err := os.Rename(oldPath, oldPath+ConfigExt); err != nil {
-		log.Fatal(err)
-	}
-
-	tmp, err = os.Open(oldPath + ConfigExt) // open the new file with ext
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return tmp, oldPath
-}
-
 func TestNewServer(t *testing.T) {
-	go func() {
-		file, fileName := createConfigServerFile()
-		defer os.Remove(file.Name())
+	lfile, err := ioutil.TempFile("", "")
 
-		NewServer(fileName, Routes{
-			Route{"Root", "/", new(TestResource)},
-			Route{"Test", "/test", new(TestResource)},
-			Route{"TestId", "/test/{client}", new(TestResource)},
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := lfile.Close(); err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(lfile.Name())
+
+	cfile, fileName := new(Config).NewTempFile(
+		"port: " + TestServerPort +
+			"\nenvironment: TESTING" +
+			"\naccesslog: " + lfile.Name())
+	defer os.Remove(cfile.Name())
+
+	server := NewServer(fileName, Routes{
+		Route{"Root", "/", new(TestResource)},
+		Route{"Test", "/test", new(TestResource)},
+		Route{"TestId", "/test/{client}", new(TestResource)},
+	})
+
+	var channelResponse string
+	channelOk := "CHANNEL OK"
+
+	go func() {
+		server.Listen(func(m *mux.Router) http.Handler {
+			channelResponse = channelOk
+			return m
 		})
 	}()
 
@@ -78,6 +71,7 @@ func TestNewServer(t *testing.T) {
 
 	response, err := http.DefaultClient.Do(request)
 	retryTilGiveUp := 100
+
 	for i := 0; i < retryTilGiveUp; i++ {
 		if err == nil {
 			break
@@ -95,6 +89,20 @@ func TestNewServer(t *testing.T) {
 	if got, want := response.StatusCode, http.StatusOK; got != want {
 		t.Errorf("Connection response status `%d`, expecting `%d`", got, want)
 	}
+
+	if channelOk != channelResponse {
+		t.Errorf("Server handler response `%v`, expecting `%v`", channelOk, channelResponse)
+	}
+
+	bContent, err := ioutil.ReadFile(lfile.Name())
+
+	if err != nil {
+		t.Errorf("Server access log must not have ERR; got `%v`", err)
+	}
+
+	if 0 == len(bContent) {
+		t.Errorf("Server access log must not be empty; got `%v`", len(bContent))
+	}
 }
 
 func TestSampleRouteWithUrlParamater(t *testing.T) {
@@ -108,22 +116,22 @@ func TestSampleRouteWithUrlParamater(t *testing.T) {
 	response, err := http.DefaultClient.Do(request)
 
 	if err != nil {
-		panic(err)
+		t.Fatalf("Encountering error in request `%v`", err)
 	}
 
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		panic(err)
+		t.Fatalf("Encountering error in response `%v`", err)
 	}
 
 	if got, want := response.StatusCode, http.StatusOK; got != want {
-		t.Errorf("Connection response status `%d`, want `%d`", got, want)
+		t.Errorf("Encountering HTTP status code `%d`, should be `%d`", got, want)
 	}
 
 	if got, want := string(body), TestResource200Message; got != want {
-		t.Errorf("Response body `%s`, want `%s`", got, want)
+		t.Errorf("Encountering response body `%s`, should be `%s`", got, want)
 	}
 }
 
@@ -138,21 +146,21 @@ func TestSampleRouteWithoutUrlParamater(t *testing.T) {
 	response, err := http.DefaultClient.Do(request)
 
 	if err != nil {
-		panic(err)
+		t.Fatalf("Encountering error in request `%v`", err)
 	}
 
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		panic(err)
+		t.Fatalf("Encountering error in response `%v`", err)
 	}
 
 	if got, want := response.StatusCode, http.StatusOK; got != want {
-		t.Errorf("Connection response status `%d`, want `%d`", got, want)
+		t.Errorf("Encountering HTTP status code `%d`, should be `%d`", got, want)
 	}
 
 	if got, want := string(body), TestResource200Message; got != want {
-		t.Errorf("Response body `%s`, want `%s`", got, want)
+		t.Errorf("Encountering response body `%s`, should be `%s`", got, want)
 	}
 }
