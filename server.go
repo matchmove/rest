@@ -12,6 +12,7 @@ type Server struct {
 	Environment string
 }
 
+// NewServer method creates a sever given the config path and itso Routes.
 func NewServer(path string, r Routes) {
 	var server Server
 
@@ -23,5 +24,5 @@ func NewServer(path string, r Routes) {
 }
 
 func (server *Server) listen(router *mux.Router) {
-	http.ListenAndServe(":"+server.Port, router)
+	http.ListenAndServe(":" + server.Port, router)
 }

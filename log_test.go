@@ -12,7 +12,7 @@ import (
 
 func TestNewLog(t *testing.T) {
 	l := NewLog()
-	lastEntry := l.Entry[len(l.Entry)-1]
+	lastEntry := l.Entry[len(l.Entry) - 1]
 
 	if NewInstanceMsg != lastEntry.Message {
 		t.Errorf(
@@ -44,7 +44,7 @@ func TestPrint(t *testing.T) {
 	}
 
 	l.Print(msg, i)
-	lastEntry := l.Entry[len(l.Entry)-1]
+	lastEntry := l.Entry[len(l.Entry) - 1]
 
 	if 2 != len(l.Entry) {
 		t.Error("Expected 2 entries, got", len(l.Entry))

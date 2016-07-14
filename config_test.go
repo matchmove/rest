@@ -31,7 +31,7 @@ func createTempFile() (*os.File, string) {
 
 	oldPath := tmp.Name()
 
-	if err := os.Rename(oldPath, oldPath+ConfigExt); err != nil {
+	if err := os.Rename(oldPath, oldPath + ConfigExt); err != nil {
 		log.Fatal(err)
 	}
 

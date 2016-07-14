@@ -13,8 +13,8 @@ import (
 
 const (
 	TestResource200Message = "FooBar"
-	TestServerPort         = "8999"
-	TestServerDomain       = "http://0.0.0.0:"
+	TestServerPort = "8999"
+	TestServerDomain = "http://0.0.0.0:"
 )
 
 type TestResource struct {
@@ -44,7 +44,7 @@ func createConfigServerFile() (*os.File, string) {
 
 	oldPath := tmp.Name()
 
-	if err := os.Rename(oldPath, oldPath+ConfigExt); err != nil {
+	if err := os.Rename(oldPath, oldPath + ConfigExt); err != nil {
 		log.Fatal(err)
 	}
 
@@ -70,7 +70,7 @@ func TestNewServer(t *testing.T) {
 	}()
 
 	//Create request with JSON body
-	request, err := http.NewRequest("GET", TestServerDomain+TestServerPort, strings.NewReader(""))
+	request, err := http.NewRequest("GET", TestServerDomain + TestServerPort, strings.NewReader(""))
 
 	if err != nil {
 		panic(err)
@@ -99,7 +99,7 @@ func TestNewServer(t *testing.T) {
 
 func TestSampleRouteWithUrlParamater(t *testing.T) {
 	//Create request with JSON body
-	request, err := http.NewRequest("GET", TestServerDomain+TestServerPort+"/test", strings.NewReader(""))
+	request, err := http.NewRequest("GET", TestServerDomain + TestServerPort + "/test", strings.NewReader(""))
 
 	if err != nil {
 		panic(err)
@@ -129,7 +129,7 @@ func TestSampleRouteWithUrlParamater(t *testing.T) {
 
 func TestSampleRouteWithoutUrlParamater(t *testing.T) {
 	//Create request with JSON body
-	request, err := http.NewRequest("GET", TestServerDomain+TestServerPort+"/test", strings.NewReader(""))
+	request, err := http.NewRequest("GET", TestServerDomain + TestServerPort + "/test", strings.NewReader(""))
 
 	if err != nil {
 		panic(err)

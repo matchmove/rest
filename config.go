@@ -2,6 +2,7 @@ package rest
 
 import (
 	"io/ioutil"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -15,6 +16,7 @@ type Config struct {
 	path string
 }
 
+// readFile Read a file given its path and returns its contents
 func (c Config) readFile(path string) ([]byte, error) {
 	return ioutil.ReadFile(path)
 }
