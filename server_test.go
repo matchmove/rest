@@ -47,9 +47,9 @@ func TestNewServer(t *testing.T) {
 	defer os.Remove(cfile.Name())
 
 	server := NewServer(fileName, Routes{
-		Route{"Root", "/", new(TestResource)},
-		Route{"Test", "/test", new(TestResource)},
-		Route{"TestId", "/test/{client}", new(TestResource)},
+		NewRoute("Root", "/", new(TestResource)),
+		NewRoute("Test", "/test", new(TestResource)),
+		NewRoute("TestId", "/test/{client}", new(TestResource)),
 	})
 
 	var channelResponse string

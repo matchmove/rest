@@ -21,6 +21,11 @@ type Route struct {
 // Routes represents a array/collection of Route
 type Routes []Route
 
+// NewRoute creates a new route
+func NewRoute(n string, p string, r ResourceType) Route {
+	return Route{Name: n, Pattern: p, Resource: r}
+}
+
 // GetHandler is the method that handles the http.HandlerFunc
 func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
