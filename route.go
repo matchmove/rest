@@ -29,7 +29,10 @@ func NewRoute(n string, p string, r ResourceType) Route {
 // GetHandler is the method that handles the http.HandlerFunc
 func (route *Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		route.Resource.Set(mux.Vars(r), w, r, s)
+		l := NewLog()
+		defer l.Dump()
+
+		route.Resource.Set(mux.Vars(r), w, r, &l, s)
 
 		route.Resource.Init()
 

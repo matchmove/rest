@@ -59,6 +59,6 @@ func (l *Log) Fatal(v ...interface{}) {
 func (l *Log) Dump() {
 	len := len(l.Entry)
 	for i := 0; i < len; i++ {
-		fmt.Printf("%s - %s", l.getDate(l.Entry[i].Time), l.Entry[i].Message)
+		fmt.Printf("%s - %s\n", l.getDate(l.Entry[i].Time), l.Entry[i].Message)
 	}
 }

@@ -17,7 +17,7 @@ const (
 
 // ResourceType represents an interface information about a rest resource.
 type ResourceType interface {
-	Set(map[string]string, http.ResponseWriter, *http.Request, *Server)
+	Set(map[string]string, http.ResponseWriter, *http.Request, *Log, *Server)
 
 	Init()
 
@@ -43,17 +43,16 @@ type Resource struct {
 	Vars   map[string]string
 	Write  http.ResponseWriter
 	Read   *http.Request
+	Log    *Log
 	Server *Server
 }
 
-// Set method to set the following properties:
-// - Vars  map[string]string  	Represents the Url Variables
-// - Write http.ResponseWriter	Represents the http Response
-// - Read  *http.Request				Represents the http Request
-func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, s *Server) {
+// Set method to set the following properties
+func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, l *Log, s *Server) {
 	c.Vars = mux.Vars(r)
 	c.Write = w
 	c.Read = r
+	c.Log = l
 	c.Server = s
 }
 
