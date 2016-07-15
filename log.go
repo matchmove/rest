@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	// NewInstanceMsg sets the initial message to indicate the start of the log
+	// NewInstanceMsg sets the message to indicate the start of the log
 	NewInstanceMsg = "NEW Log Instance"
+	// EndInstanceMsg sets the message to indicate the end of the log
+	EndInstanceMsg = "End of Log Entry"
 )
 
 // Log represents information about a rest server log.
@@ -57,6 +59,8 @@ func (l *Log) Fatal(v ...interface{}) {
 
 // Dump will print all the messages to the io.
 func (l *Log) Dump() {
+	l.Print(EndInstanceMsg)
+
 	len := len(l.Entry)
 	for i := 0; i < len; i++ {
 		fmt.Printf("%s - %s\n", l.getDate(l.Entry[i].Time), l.Entry[i].Message)
