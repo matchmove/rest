@@ -27,9 +27,9 @@ func NewRoute(n string, p string, r ResourceType) Route {
 }
 
 // GetHandler is the method that handles the http.HandlerFunc
-func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request) {
+func (route *Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		route.Resource.Set(mux.Vars(r), w, r)
+		route.Resource.Set(mux.Vars(r), w, r, s)
 
 		route.Resource.Init()
 
@@ -56,7 +56,7 @@ func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request) {
 }
 
 // NewRouter set the Routes given the array of route
-func NewRouter(routes Routes) *mux.Router {
+func NewRouter(routes Routes, s *Server) *mux.Router {
 
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -64,7 +64,7 @@ func NewRouter(routes Routes) *mux.Router {
 		router.
 			Path(route.Pattern).
 			Name(route.Name).
-			Handler(http.HandlerFunc(route.GetHandler()))
+			Handler(http.HandlerFunc(route.GetHandler(s)))
 	}
 
 	return router

@@ -24,30 +24,23 @@ var (
 	EmptyHandler = func(r *mux.Router) http.Handler { return r }
 )
 
-// NewServer sets up the configuration of the server and creates an instance
-func NewServer(path string, r Routes) Server {
-	var server Server
+// Routes sets up the configuration of the server and creates an instance
+func (server *Server) Routes(r Routes) {
+	server.Router = NewRouter(r, server)
 
-	if err := NewConfig(path, &server); err != nil {
-		log.Fatalf("Server configuration cannot be loaded with error `%v`", err)
-	}
-
-	server.Router = NewRouter(r)
-
-	accesLog, err := os.Create(server.AccessLog)
+	accessLog, err := os.Create(server.AccessLog)
 
 	if err != nil {
 		log.Fatalf("Failed to create accesslog file with error `%v`", err)
 	}
 
-	server.AccessLogFile = accesLog
-
-	return server
+	server.AccessLogFile = accessLog
 }
 
 // Listen initiates the handlers
 func (server *Server) Listen(h func(*mux.Router) http.Handler) {
 	handler := handlers.LoggingHandler(server.AccessLogFile, h(server.Router))
+	defer server.AccessLogFile.Close()
 
 	if err := http.ListenAndServe(":"+server.Port, handler); err != nil {
 		log.Fatalf("Failed to start server with error `%v`", err)

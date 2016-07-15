@@ -46,7 +46,13 @@ func TestNewServer(t *testing.T) {
 			"\naccesslog: " + lfile.Name())
 	defer os.Remove(cfile.Name())
 
-	server := NewServer(fileName, Routes{
+	var server Server
+
+	if err := LoadConfig(fileName, &server); err != nil {
+		panic(err)
+	}
+
+	server.Routes(Routes{
 		NewRoute("Root", "/", new(TestResource)),
 		NewRoute("Test", "/test", new(TestResource)),
 		NewRoute("TestId", "/test/{client}", new(TestResource)),

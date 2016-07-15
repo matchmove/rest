@@ -23,10 +23,9 @@ func (c Config) readFile(path string) ([]byte, error) {
 	return ioutil.ReadFile(path)
 }
 
-// NewConfig creates a new instance of configuration from a file
-func NewConfig(path string, out interface{}) error {
+// LoadConfig creates a new instance of configuration from a file
+func LoadConfig(path string, out interface{}) error {
 	var c Config
-
 	buff, err := c.readFile(path + ConfigExt)
 
 	if err != nil {

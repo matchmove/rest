@@ -57,12 +57,12 @@ func TestReadFile(t *testing.T) {
 	}
 }
 
-func TestNewConfig(t *testing.T) {
+func TestLoadConfig(t *testing.T) {
 	file, fileName := new(Config).NewTempFile("a: foo\nb: bar\nc: 21")
 	defer os.Remove(file.Name())
 
 	var tc TestConfig
-	err := NewConfig(fileName, &tc)
+	err := LoadConfig(fileName, &tc)
 
 	emptyTestConfig := TestConfig{}
 
