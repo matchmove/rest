@@ -25,8 +25,14 @@ var (
 )
 
 // Routes sets up the configuration of the server and creates an instance
-func (server *Server) Routes(r Routes) {
-	server.Router = NewRouter(r, server)
+func (server *Server) Routes(r Routes, def func(http.ResponseWriter, *http.Request)) {
+	router := mux.NewRouter().StrictSlash(true)
+
+	if def != nil {
+		router.HandleFunc("/", def)
+	}
+
+	server.Router = ApplyRoutes(router, r, server)
 
 	accessLog, err := os.Create(server.AccessLog)
 

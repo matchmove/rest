@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	TestResource200Root              = "FooBarTest"
 	TestResource200Message           = "FooBar"
 	TestResource200MessageSub        = "FooBarSub"
 	TestResource200MessageWithParam1 = "FooBar1"
@@ -69,10 +70,11 @@ func TestNewServer(t *testing.T) {
 	}
 
 	server.Routes(Routes{
-		NewRoute("Root", "/", new(TestResource)),
 		NewRoute("Test", "/test", new(TestResource)),
 		NewRoute("Test", "/test2", new(TestSubResource)),
 		NewRoute("TestId", "/test/{id}", new(TestResource)),
+	}, func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, TestResource200Root)
 	})
 
 	var channelResponse string
@@ -156,6 +158,10 @@ func runTestCall(t *testing.T, u string, expect string) {
 	if got, want := string(body), expect; got != want {
 		t.Errorf("Encountering response body `%s`, should be `%s`", got, want)
 	}
+}
+
+func TestRootRoute(t *testing.T) {
+	runTestCall(t, "/", TestResource200Root)
 }
 
 func TestSampleResource(t *testing.T) {

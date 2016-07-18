@@ -58,13 +58,9 @@ func (route Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request
 	}
 }
 
-// NewRouter set the Routes given the array of route
-func NewRouter(routes Routes, s *Server) *mux.Router {
-
-	router := mux.NewRouter().StrictSlash(true)
-
+// ApplyRoutes set the Routes given the array of route
+func ApplyRoutes(router *mux.Router, routes Routes, s *Server) *mux.Router {
 	for _, route := range routes {
-
 		router.
 			Path(route.Pattern).
 			Name(route.Name).

@@ -43,19 +43,19 @@ var (
 )
 ```
 
+#### func  ApplyRoutes
+
+```go
+func ApplyRoutes(router *mux.Router, routes Routes, s *Server) *mux.Router
+```
+ApplyRoutes set the Routes given the array of route
+
 #### func  LoadConfig
 
 ```go
 func LoadConfig(path string, out interface{}) error
 ```
 LoadConfig creates a new instance of configuration from a file
-
-#### func  NewRouter
-
-```go
-func NewRouter(routes Routes, s *Server) *mux.Router
-```
-NewRouter set the Routes given the array of route
 
 #### type Config
 
@@ -291,6 +291,6 @@ Listen initiates the handlers
 #### func (*Server) Routes
 
 ```go
-func (server *Server) Routes(r Routes)
+func (server *Server) Routes(r Routes, def func(http.ResponseWriter, *http.Request))
 ```
 Routes sets up the configuration of the server and creates an instance
