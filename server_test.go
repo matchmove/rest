@@ -26,13 +26,13 @@ type TestResource struct {
 }
 
 func (c *TestResource) Get() {
-	c.Write.WriteHeader(http.StatusOK)
+	c.Response.WriteHeader(http.StatusOK)
 	if c.Vars["id"] != "" {
-		fmt.Fprintf(c.Write, TestResource200MessageWithParam1)
+		fmt.Fprintf(c.Response, TestResource200MessageWithParam1)
 		return
 	}
 
-	fmt.Fprintf(c.Write, TestResource200Message)
+	fmt.Fprintf(c.Response, TestResource200Message)
 }
 
 type TestSubResource struct {
@@ -40,8 +40,8 @@ type TestSubResource struct {
 }
 
 func (c *TestSubResource) Get() {
-	c.Write.WriteHeader(http.StatusOK)
-	fmt.Fprintf(c.Write, TestResource200MessageSub)
+	c.Response.WriteHeader(http.StatusOK)
+	fmt.Fprintf(c.Response, TestResource200MessageSub)
 }
 
 func TestNewServer(t *testing.T) {
