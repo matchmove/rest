@@ -12,7 +12,7 @@ import (
 
 func TestNewLog(t *testing.T) {
 	l := NewLog()
-	lastEntry := l.Entry[len(l.Entry) - 1]
+	lastEntry := l.Entry[len(l.Entry)-1]
 
 	if NewInstanceMsg != lastEntry.Message {
 		t.Errorf(
@@ -44,7 +44,7 @@ func TestPrint(t *testing.T) {
 	}
 
 	l.Print(msg, i)
-	lastEntry := l.Entry[len(l.Entry) - 1]
+	lastEntry := l.Entry[len(l.Entry)-1]
 
 	if 2 != len(l.Entry) {
 		t.Error("Expected 2 entries, got", len(l.Entry))
@@ -53,6 +53,38 @@ func TestPrint(t *testing.T) {
 	if tEntry := fmt.Sprint(msg, i); lastEntry.Message != tEntry {
 		t.Errorf("Expected entry.Message to be `%v`, got `%v`", tEntry, lastEntry.Message)
 	}
+}
+
+func TestPanic(t *testing.T) {
+	l := NewLog()
+	msg := "Test log message"
+	i := struct {
+		i    int
+		text string
+	}{
+		21,
+		"interface",
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			lastEntry := l.Entry[len(l.Entry)-1]
+
+			if 2 != len(l.Entry) {
+				t.Error("Expected 2 entries, got", len(l.Entry))
+			}
+
+			if tEntry := fmt.Sprint(msg, i); lastEntry.Message != tEntry {
+				t.Errorf("Expected entry.Message to be `%v`, got `%v`", tEntry, lastEntry.Message)
+			}
+			return
+		}
+
+		t.Error("Expected panic() with message but got `nil`")
+	}()
+
+	l.Panic(msg, i)
+	t.Error("Expected panic() to be thrown")
 }
 
 func TestFatal(t *testing.T) {
@@ -72,11 +104,11 @@ func TestFatal(t *testing.T) {
 
 func TestDump(t *testing.T) {
 	l := NewLog()
+	l.Print("This is a test message")
 
 	old := os.Stdout // keep backup of the real stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-
 	l.Dump()
 
 	outC := make(chan string)

@@ -8,9 +8,15 @@ import (
 
 const (
 	// NewInstanceMsg sets the message to indicate the start of the log
-	NewInstanceMsg = "NEW Log Instance"
+	NewInstanceMsg = "START"
 	// EndInstanceMsg sets the message to indicate the end of the log
-	EndInstanceMsg = "End of Log Entry"
+	EndInstanceMsg = "END"
+	// LogLevelDebug defines a normal debug log
+	LogLevelDebug = "DEBUG"
+	// LogLevelPanic defines a panic log
+	LogLevelPanic = "PANIC"
+	// LogLevelFatal defines a fatal log
+	LogLevelFatal = "FATAL"
 )
 
 // Log represents information about a rest server log.
@@ -20,6 +26,7 @@ type Log struct {
 
 // Entry represents information about a rest server log entry.
 type Entry struct {
+	Level   string
 	Message string
 	Time    time.Time
 }
@@ -39,15 +46,26 @@ func NewLog() Log {
 	return log
 }
 
-// Print a regular log
-func (l *Log) Print(v ...interface{}) {
+func (l *Log) addEntry(level string, v ...interface{}) {
 	l.Entry = append(
 		l.Entry,
 		Entry{
+			Level:   level,
 			Message: fmt.Sprint(v...),
 			Time:    time.Now(),
 		},
 	)
+}
+
+// Print a regular log
+func (l *Log) Print(v ...interface{}) {
+	l.addEntry(LogLevelDebug, v...)
+}
+
+// Panic then throws a panic with the same message afterwards
+func (l *Log) Panic(v ...interface{}) {
+	l.addEntry(LogLevelPanic, v...)
+	panic(fmt.Sprint(v...))
 }
 
 // Fatal is equivalent to Print() and followed by a call to os.Exit(1)
@@ -59,10 +77,10 @@ func (l *Log) Fatal(v ...interface{}) {
 
 // Dump will print all the messages to the io.
 func (l *Log) Dump() {
-	l.Print(EndInstanceMsg)
+	l.addEntry("", EndInstanceMsg)
 
 	len := len(l.Entry)
 	for i := 0; i < len; i++ {
-		fmt.Printf("%s - %s\n", l.getDate(l.Entry[i].Time), l.Entry[i].Message)
+		fmt.Printf("%s\t%s\t%s\n", l.getDate(l.Entry[i].Time), l.Entry[i].Level, l.Entry[i].Message)
 	}
 }

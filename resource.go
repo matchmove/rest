@@ -35,67 +35,60 @@ type ResourceType interface {
 }
 
 // Resource represents the information about the Resource.
-// need to add 3 properties:
-// - Vars  map[string]string
-// - Write http.ResponseWriter
-// - Read  *http.Request
 type Resource struct {
-	Vars   map[string]string
-	Write  http.ResponseWriter
-	Read   *http.Request
-	Log    *Log
-	Server *Server
+	Vars     map[string]string
+	Response http.ResponseWriter
+	Request  *http.Request
+	Log      *Log
+	Server   *Server
 }
 
 // Set method to set the following properties
 func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, l *Log, s *Server) {
 	c.Vars = mux.Vars(r)
-	c.Write = w
-	c.Read = r
+	c.Response = w
+	c.Request = r
 	c.Log = l
 	c.Server = s
 }
 
 // SetContentType method to set the content type
 func (c *Resource) SetContentType(ctype string) {
-	c.Write.Header().Set("Content-Type", ctype)
+	c.Response.Header().Set("Content-Type", ctype)
 }
 
 // Init method that initialized the Resource.
-func (c *Resource) Init() {
-	c.SetContentType(ContentTypeJSON)
-}
+func (c *Resource) Init() {}
 
 // Get represents http.get
 func (c *Resource) Get() {
-
+	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Put represents http.put
 func (c *Resource) Put() {
-	c.Write.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Write, StatusMethodNotAllowed)
+	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Post represents http.post
 func (c *Resource) Post() {
-	c.Write.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Write, StatusMethodNotAllowed)
+	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Patch represents http.patch
 func (c *Resource) Patch() {
-	c.Write.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Write, StatusMethodNotAllowed)
+	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Delete represents http.delete
 func (c *Resource) Delete() {
-	c.Write.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Write, StatusMethodNotAllowed)
+	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Deinit method that finalizes the Resource.
-func (c *Resource) Deinit() {
-
-}
+func (c *Resource) Deinit() {}

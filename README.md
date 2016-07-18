@@ -7,6 +7,21 @@
 
 ```go
 const (
+	// NewInstanceMsg sets the message to indicate the start of the log
+	NewInstanceMsg = "START"
+	// EndInstanceMsg sets the message to indicate the end of the log
+	EndInstanceMsg = "END"
+	// LogLevelDebug defines a normal debug log
+	LogLevelDebug = "DEBUG"
+	// LogLevelPanic defines a panic log
+	LogLevelPanic = "PANIC"
+	// LogLevelFatal defines a fatal log
+	LogLevelFatal = "FATAL"
+)
+```
+
+```go
+const (
 	// StatusMethodNotAllowed defines the HTTP message when 405 is encountered
 	StatusMethodNotAllowed = "Method Not Allowed"
 	// ContentTypeJSON defines Content-Type for application/json
@@ -17,14 +32,7 @@ const (
 ```go
 const (
 	// ConfigExt defines the configuration extention that can be used
-	ConfigExt = ".yaml"
-)
-```
-
-```go
-const (
-	// NewInstanceMsg sets the initial message to indicate the start of the log
-	NewInstanceMsg = "NEW Log Instance"
+	ConfigExt = ".yml"
 )
 ```
 
@@ -35,17 +43,17 @@ var (
 )
 ```
 
-#### func  NewConfig
+#### func  LoadConfig
 
 ```go
-func NewConfig(path string, out interface{}) error
+func LoadConfig(path string, out interface{}) error
 ```
-NewConfig creates a new instance of configuration from a file
+LoadConfig creates a new instance of configuration from a file
 
 #### func  NewRouter
 
 ```go
-func NewRouter(routes Routes) *mux.Router
+func NewRouter(routes Routes, s *Server) *mux.Router
 ```
 NewRouter set the Routes given the array of route
 
@@ -69,6 +77,7 @@ NewTempFile creates a configuration file
 
 ```go
 type Entry struct {
+	Level   string
 	Message string
 	Time    time.Time
 }
@@ -107,6 +116,13 @@ func (l *Log) Fatal(v ...interface{})
 ```
 Fatal is equivalent to Print() and followed by a call to os.Exit(1)
 
+#### func (*Log) Panic
+
+```go
+func (l *Log) Panic(v ...interface{})
+```
+Panic then throws a panic with the same message afterwards
+
 #### func (*Log) Print
 
 ```go
@@ -118,15 +134,15 @@ Print a regular log
 
 ```go
 type Resource struct {
-	Vars  map[string]string
-	Write http.ResponseWriter
-	Read  *http.Request
+	Vars     map[string]string
+	Response http.ResponseWriter
+	Request  *http.Request
+	Log      *Log
+	Server   *Server
 }
 ```
 
-Resource represents the information about the Resource. need to add 3
-properties: - Vars map[string]string - Write http.ResponseWriter - Read
-*http.Request
+Resource represents the information about the Resource.
 
 #### func (*Resource) Deinit
 
@@ -180,11 +196,9 @@ Put represents http.put
 #### func (*Resource) Set
 
 ```go
-func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request)
+func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, l *Log, s *Server)
 ```
-Set method to set the following properties: - Vars map[string]string Represents
-the Url Variables - Write http.ResponseWriter Represents the http Response -
-Read *http.Request Represents the http Request
+Set method to set the following properties
 
 #### func (*Resource) SetContentType
 
@@ -197,7 +211,7 @@ SetContentType method to set the content type
 
 ```go
 type ResourceType interface {
-	Set(map[string]string, http.ResponseWriter, *http.Request)
+	Set(map[string]string, http.ResponseWriter, *http.Request, *Log, *Server)
 
 	Init()
 
@@ -230,10 +244,17 @@ type Route struct {
 Route represents the struct of Route properties: - Name string Route name -
 Pattern string Pattern or Url Pattern - Resource ResourceType
 
-#### func (*Route) GetHandler
+#### func  NewRoute
 
 ```go
-func (route *Route) GetHandler() func(http.ResponseWriter, *http.Request)
+func NewRoute(n string, p string, r ResourceType) Route
+```
+NewRoute creates a new route
+
+#### func (Route) GetHandler
+
+```go
+func (route Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request)
 ```
 GetHandler is the method that handles the http.HandlerFunc
 
@@ -260,16 +281,16 @@ type Server struct {
 
 Server represents information about a rest server.
 
-#### func  NewServer
-
-```go
-func NewServer(path string, r Routes) Server
-```
-NewServer sets up the configuration of the server and creates an instance
-
 #### func (*Server) Listen
 
 ```go
 func (server *Server) Listen(h func(*mux.Router) http.Handler)
 ```
 Listen initiates the handlers
+
+#### func (*Server) Routes
+
+```go
+func (server *Server) Routes(r Routes)
+```
+Routes sets up the configuration of the server and creates an instance
