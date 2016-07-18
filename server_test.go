@@ -14,9 +14,11 @@ import (
 )
 
 const (
-	TestResource200Message = "FooBar"
-	TestServerPort         = "8999"
-	TestServerDomain       = "http://0.0.0.0:"
+	TestResource200Message           = "FooBar"
+	TestResource200MessageSub        = "FooBarSub"
+	TestResource200MessageWithParam1 = "FooBar1"
+	TestServerPort                   = "8999"
+	TestServerDomain                 = "http://0.0.0.0:"
 )
 
 type TestResource struct {
@@ -25,7 +27,21 @@ type TestResource struct {
 
 func (c *TestResource) Get() {
 	c.Write.WriteHeader(http.StatusOK)
+	if c.Vars["id"] != "" {
+		fmt.Fprintf(c.Write, TestResource200MessageWithParam1)
+		return
+	}
+
 	fmt.Fprintf(c.Write, TestResource200Message)
+}
+
+type TestSubResource struct {
+	Resource
+}
+
+func (c *TestSubResource) Get() {
+	c.Write.WriteHeader(http.StatusOK)
+	fmt.Fprintf(c.Write, TestResource200MessageSub)
 }
 
 func TestNewServer(t *testing.T) {
@@ -55,7 +71,8 @@ func TestNewServer(t *testing.T) {
 	server.Routes(Routes{
 		NewRoute("Root", "/", new(TestResource)),
 		NewRoute("Test", "/test", new(TestResource)),
-		NewRoute("TestId", "/test/{client}", new(TestResource)),
+		NewRoute("Test", "/test2", new(TestSubResource)),
+		NewRoute("TestId", "/test/{id}", new(TestResource)),
 	})
 
 	var channelResponse string
@@ -111,9 +128,9 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
-func TestSampleRouteWithUrlParamater(t *testing.T) {
+func runTestCall(t *testing.T, u string, expect string) {
 	//Create request with JSON body
-	request, err := http.NewRequest("GET", TestServerDomain+TestServerPort+"/test", strings.NewReader(""))
+	request, err := http.NewRequest("GET", TestServerDomain+TestServerPort+u, strings.NewReader(""))
 
 	if err != nil {
 		panic(err)
@@ -136,37 +153,19 @@ func TestSampleRouteWithUrlParamater(t *testing.T) {
 		t.Errorf("Encountering HTTP status code `%d`, should be `%d`", got, want)
 	}
 
-	if got, want := string(body), TestResource200Message; got != want {
+	if got, want := string(body), expect; got != want {
 		t.Errorf("Encountering response body `%s`, should be `%s`", got, want)
 	}
 }
 
+func TestSampleResource(t *testing.T) {
+	runTestCall(t, "/test", TestResource200Message)
+}
+
+func TestSampleSubResource(t *testing.T) {
+	runTestCall(t, "/test2", TestResource200MessageSub)
+}
+
 func TestSampleRouteWithoutUrlParamater(t *testing.T) {
-	//Create request with JSON body
-	request, err := http.NewRequest("GET", TestServerDomain+TestServerPort+"/test", strings.NewReader(""))
-
-	if err != nil {
-		panic(err)
-	}
-
-	response, err := http.DefaultClient.Do(request)
-
-	if err != nil {
-		t.Fatalf("Encountering error in request `%v`", err)
-	}
-
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
-
-	if err != nil {
-		t.Fatalf("Encountering error in response `%v`", err)
-	}
-
-	if got, want := response.StatusCode, http.StatusOK; got != want {
-		t.Errorf("Encountering HTTP status code `%d`, should be `%d`", got, want)
-	}
-
-	if got, want := string(body), TestResource200Message; got != want {
-		t.Errorf("Encountering response body `%s`, should be `%s`", got, want)
-	}
+	runTestCall(t, "/test/1", TestResource200MessageWithParam1)
 }
