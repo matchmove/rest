@@ -291,6 +291,6 @@ Listen initiates the handlers
 #### func (*Server) Routes
 
 ```go
-func (server *Server) Routes(r Routes, def func(http.ResponseWriter, *http.Request))
+func (server *Server) Routes(r Routes, def func(http.ResponseWriter, *http.Request), router *mux.Router)
 ```
 Routes sets up the configuration of the server and creates an instance
