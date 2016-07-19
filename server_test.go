@@ -60,7 +60,8 @@ func TestNewServer(t *testing.T) {
 	cfile, fileName := new(Config).NewTempFile(
 		"port: " + TestServerPort +
 			"\nenvironment: TESTING" +
-			"\naccesslog: " + lfile.Name())
+			"\naccesslog: " + lfile.Name() +
+			"\nversion: '1'")
 	defer os.Remove(cfile.Name())
 
 	var server Server
@@ -165,13 +166,13 @@ func TestRootRoute(t *testing.T) {
 }
 
 func TestSampleResource(t *testing.T) {
-	runTestCall(t, "/test", TestResource200Message)
+	runTestCall(t, "/v1/test", TestResource200Message)
 }
 
 func TestSampleSubResource(t *testing.T) {
-	runTestCall(t, "/test2", TestResource200MessageSub)
+	runTestCall(t, "/v1/test2", TestResource200MessageSub)
 }
 
 func TestSampleRouteWithoutUrlParamater(t *testing.T) {
-	runTestCall(t, "/test/1", TestResource200MessageWithParam1)
+	runTestCall(t, "/v1/test/1", TestResource200MessageWithParam1)
 }

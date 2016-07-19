@@ -11,6 +11,7 @@ import (
 
 // Server represents information about a rest server.
 type Server struct {
+	Version     string
 	Port        string
 	Environment string
 	AccessLog   string
@@ -29,6 +30,11 @@ func (server *Server) Routes(r Routes, def func(http.ResponseWriter, *http.Reque
 	router := mux.NewRouter().StrictSlash(true)
 
 	if def != nil {
+		router.HandleFunc("/", def)
+	}
+
+	if server.Version != "" {
+		router = router.PathPrefix("/v" + server.Version).Subrouter()
 		router.HandleFunc("/", def)
 	}
 
