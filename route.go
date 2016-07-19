@@ -67,5 +67,10 @@ func ApplyRoutes(router *mux.Router, routes Routes, s *Server) *mux.Router {
 			Handler(http.HandlerFunc(route.GetHandler(s)))
 	}
 
+	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", ContentTypeTextPlain)
+		w.WriteHeader(http.StatusNotFound)
+	})
+
 	return router
 }

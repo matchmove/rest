@@ -13,6 +13,8 @@ const (
 	StatusMethodNotAllowed = "Method Not Allowed"
 	// ContentTypeJSON defines Content-Type for application/json
 	ContentTypeJSON = "application/json"
+	// ContentTypeTextPlain defines Content-Type for text/plain
+	ContentTypeTextPlain = "text/plain"
 )
 
 // ResourceType represents an interface information about a rest resource.
