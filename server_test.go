@@ -60,8 +60,7 @@ func TestNewServer(t *testing.T) {
 	cfile, fileName := new(Config).NewTempFile(
 		"port: " + TestServerPort +
 			"\nenvironment: TESTING" +
-			"\naccesslog: " + lfile.Name() +
-			"\nversion: '1'")
+			"\naccesslog: " + lfile.Name())
 	defer os.Remove(cfile.Name())
 
 	var server Server
@@ -76,7 +75,7 @@ func TestNewServer(t *testing.T) {
 		NewRoute("TestId", "/test/{id}", new(TestResource)),
 	}, func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, TestResource200Root)
-	})
+	}, nil)
 
 	var channelResponse string
 	channelOk := "CHANNEL OK"
@@ -166,13 +165,13 @@ func TestRootRoute(t *testing.T) {
 }
 
 func TestSampleResource(t *testing.T) {
-	runTestCall(t, "/v1/test", TestResource200Message)
+	runTestCall(t, "/test", TestResource200Message)
 }
 
 func TestSampleSubResource(t *testing.T) {
-	runTestCall(t, "/v1/test2", TestResource200MessageSub)
+	runTestCall(t, "/test2", TestResource200MessageSub)
 }
 
 func TestSampleRouteWithoutUrlParamater(t *testing.T) {
-	runTestCall(t, "/v1/test/1", TestResource200MessageWithParam1)
+	runTestCall(t, "/test/1", TestResource200MessageWithParam1)
 }

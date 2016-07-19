@@ -11,7 +11,6 @@ import (
 
 // Server represents information about a rest server.
 type Server struct {
-	Version     string
 	Port        string
 	Environment string
 	AccessLog   string
@@ -26,15 +25,13 @@ var (
 )
 
 // Routes sets up the configuration of the server and creates an instance
-func (server *Server) Routes(r Routes, def func(http.ResponseWriter, *http.Request)) {
-	router := mux.NewRouter().StrictSlash(true)
+func (server *Server) Routes(r Routes, def func(http.ResponseWriter, *http.Request), router *mux.Router) {
 
-	if def != nil {
-		router.HandleFunc("/", def)
+	if router == nil {
+		router = mux.NewRouter().StrictSlash(true)
 	}
 
-	if server.Version != "" {
-		router = router.PathPrefix("/v" + server.Version).Subrouter()
+	if def != nil {
 		router.HandleFunc("/", def)
 	}
 
