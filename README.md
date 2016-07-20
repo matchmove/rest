@@ -22,10 +22,21 @@ const (
 
 ```go
 const (
-	// StatusMethodNotAllowed defines the HTTP message when 405 is encountered
-	StatusMethodNotAllowed = "Method Not Allowed"
 	// ContentTypeJSON defines Content-Type for application/json
 	ContentTypeJSON = "application/json"
+	// ContentTypeTextPlain defines Content-Type for text/plain
+	ContentTypeTextPlain = "text/plain"
+)
+```
+
+```go
+const (
+	// ServerEnvDev defines the DEVELOPMENT environment
+	ServerEnvDev = "DEVELOPMENT"
+	// ServerEnvTesting defines the TESTING environment
+	ServerEnvTesting = "TESTING"
+	// ServerEnvUAT defines the UAT environment
+	ServerEnvUAT = "UAT"
 )
 ```
 
@@ -206,6 +217,13 @@ Set method to set the following properties
 func (c *Resource) SetContentType(ctype string)
 ```
 SetContentType method to set the content type
+
+#### func (*Resource) SetStatus
+
+```go
+func (c *Resource) SetStatus(code int)
+```
+SetStatus method to set the header status code
 
 #### type ResourceType
 
