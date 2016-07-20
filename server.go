@@ -9,6 +9,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	// ServerEnvDev defines the DEVELOPMENT environment
+	ServerEnvDev = "DEVELOPMENT"
+	// ServerEnvTesting defines the TESTING environment
+	ServerEnvTesting = "TESTING"
+	// ServerEnvUAT defines the UAT environment
+	ServerEnvUAT = "UAT"
+)
+
 // Server represents information about a rest server.
 type Server struct {
 	Port        string

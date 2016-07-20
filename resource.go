@@ -2,15 +2,12 @@ package rest
 
 // Test cases are covered in server_test.go
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
 const (
-	// StatusMethodNotAllowed defines the HTTP message when 405 is encountered
-	StatusMethodNotAllowed = "Method Not Allowed"
 	// ContentTypeJSON defines Content-Type for application/json
 	ContentTypeJSON = "application/json"
 	// ContentTypeTextPlain defines Content-Type for text/plain
@@ -65,31 +62,26 @@ func (c *Resource) Init() {}
 // Get represents http.get
 func (c *Resource) Get() {
 	c.Response.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Put represents http.put
 func (c *Resource) Put() {
 	c.Response.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Post represents http.post
 func (c *Resource) Post() {
 	c.Response.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Patch represents http.patch
 func (c *Resource) Patch() {
 	c.Response.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Delete represents http.delete
 func (c *Resource) Delete() {
 	c.Response.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(c.Response, StatusMethodNotAllowed)
 }
 
 // Deinit method that finalizes the Resource.

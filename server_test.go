@@ -59,7 +59,7 @@ func TestNewServer(t *testing.T) {
 
 	cfile, fileName := new(Config).NewTempFile(
 		"port: " + TestServerPort +
-			"\nenvironment: TESTING" +
+			"\nenvironment: " + ServerEnvTesting +
 			"\naccesslog: " + lfile.Name())
 	defer os.Remove(cfile.Name())
 

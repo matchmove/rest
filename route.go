@@ -30,7 +30,11 @@ func NewRoute(n string, p string, r ResourceType) Route {
 func (route Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := NewLog()
-		defer l.Dump()
+		defer func() {
+			if ServerEnvTesting != s.Environment {
+				l.Dump()
+			}
+		}()
 
 		route.Resource.Set(mux.Vars(r), w, r, &l, s)
 
