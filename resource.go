@@ -56,32 +56,37 @@ func (c *Resource) SetContentType(ctype string) {
 	c.Response.Header().Set("Content-Type", ctype)
 }
 
+// SetStatus method to set the header status code
+func (c *Resource) SetStatus(code int) {
+	c.Response.WriteHeader(code)
+}
+
 // Init method that initialized the Resource.
 func (c *Resource) Init() {}
 
 // Get represents http.get
 func (c *Resource) Get() {
-	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	c.SetStatus(http.StatusMethodNotAllowed)
 }
 
 // Put represents http.put
 func (c *Resource) Put() {
-	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	c.SetStatus(http.StatusMethodNotAllowed)
 }
 
 // Post represents http.post
 func (c *Resource) Post() {
-	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	c.SetStatus(http.StatusMethodNotAllowed)
 }
 
 // Patch represents http.patch
 func (c *Resource) Patch() {
-	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	c.SetStatus(http.StatusMethodNotAllowed)
 }
 
 // Delete represents http.delete
 func (c *Resource) Delete() {
-	c.Response.WriteHeader(http.StatusMethodNotAllowed)
+	c.SetStatus(http.StatusMethodNotAllowed)
 }
 
 // Deinit method that finalizes the Resource.
