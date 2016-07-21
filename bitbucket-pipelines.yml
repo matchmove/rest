@@ -5,5 +5,5 @@ image: golang:latest
 pipelines:
   default:
     - step:
-      script:
-        - go test
+        script:
+          - go test
