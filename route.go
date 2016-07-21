@@ -2,7 +2,9 @@ package rest
 
 // Test cases are covered in server_test.go
 import (
+	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/gorilla/mux"
 )
@@ -21,6 +23,16 @@ type Routes []Route
 // NewRoute creates a new route
 func NewRoute(n string, p string, r ResourceType) Route {
 	return Route{Name: n, Pattern: p, Resource: r}
+}
+
+// GetSimplePattern returns the pattern without the regex rules
+func (route Route) GetSimplePattern() string {
+	reg, err := regexp.Compile(`:[:()?a-zA-Z0-9\[\]\-\|\{\}\\\.]+`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return reg.ReplaceAllString(route.Pattern, "}")
 }
 
 // GetHandler is the method that handles the http.HandlerFunc

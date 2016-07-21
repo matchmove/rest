@@ -277,6 +277,13 @@ func (route Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request
 ```
 GetHandler is the method that handles the http.HandlerFunc
 
+#### func (Route) GetSimplePattern
+
+```go
+func (route Route) GetSimplePattern() string
+```
+GetSimplePattern returns the pattern without the regex rules
+
 #### type Routes
 
 ```go
