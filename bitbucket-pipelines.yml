@@ -1,8 +1,8 @@
-# You can build any language by using Docker images from Docker Hub.
+# You can use a Docker image from Docker Hub or your own container
+# registry for your build environment.
 image: golang:latest
 
 pipelines:
   default:
     - step:
-        script:
           - go test
