@@ -16,9 +16,9 @@ const (
 
 // ResourceType represents an interface information about a rest resource.
 type ResourceType interface {
-	Set(map[string]string, http.ResponseWriter, *http.Request, *Log, *Server)
+	Set(map[string]string, http.ResponseWriter, *http.Request, *Log, Route)
 
-	Init()
+	Init() bool
 
 	Get()
 
@@ -39,16 +39,16 @@ type Resource struct {
 	Response http.ResponseWriter
 	Request  *http.Request
 	Log      *Log
-	Server   *Server
+	Route    Route
 }
 
 // Set method to set the following properties
-func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, l *Log, s *Server) {
+func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, l *Log, rt Route) {
 	c.Vars = mux.Vars(r)
 	c.Response = w
 	c.Request = r
 	c.Log = l
-	c.Server = s
+	c.Route = rt
 }
 
 // SetContentType method to set the content type
@@ -62,7 +62,10 @@ func (c *Resource) SetStatus(code int) {
 }
 
 // Init method that initialized the Resource.
-func (c *Resource) Init() {}
+// Returning false will skip executing the method and proceed to deinit()
+func (c *Resource) Init() bool {
+	return true
+}
 
 // Get represents http.get
 func (c *Resource) Get() {

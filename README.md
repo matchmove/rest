@@ -149,7 +149,7 @@ type Resource struct {
 	Response http.ResponseWriter
 	Request  *http.Request
 	Log      *Log
-	Server   *Server
+	Route    Route
 }
 ```
 
@@ -179,9 +179,10 @@ Get represents http.get
 #### func (*Resource) Init
 
 ```go
-func (c *Resource) Init()
+func (c *Resource) Init() bool
 ```
-Init method that initialized the Resource.
+Init method that initialized the Resource. Returning false will skip executing
+the method and proceed to deinit()
 
 #### func (*Resource) Patch
 
@@ -207,7 +208,7 @@ Put represents http.put
 #### func (*Resource) Set
 
 ```go
-func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, l *Log, s *Server)
+func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, l *Log, rt Route)
 ```
 Set method to set the following properties
 
@@ -229,9 +230,9 @@ SetStatus method to set the header status code
 
 ```go
 type ResourceType interface {
-	Set(map[string]string, http.ResponseWriter, *http.Request, *Log, *Server)
+	Set(map[string]string, http.ResponseWriter, *http.Request, *Log, Route)
 
-	Init()
+	Init() bool
 
 	Get()
 
@@ -256,11 +257,11 @@ type Route struct {
 	Name     string
 	Pattern  string
 	Resource ResourceType
+	Server   *Server
 }
 ```
 
-Route represents the struct of Route properties: - Name string Route name -
-Pattern string Pattern or Url Pattern - Resource ResourceType
+Route represents the struct of Route
 
 #### func  NewRoute
 

@@ -8,14 +8,11 @@ import (
 )
 
 // Route represents the struct of Route
-// properties:
-// - Name  		string  			Route name
-// - Pattern  string 				Pattern or Url Pattern
-// - Resource ResourceType
 type Route struct {
 	Name     string
 	Pattern  string
 	Resource ResourceType
+	Server   *Server
 }
 
 // Routes represents a array/collection of Route
@@ -36,26 +33,26 @@ func (route Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request
 			}
 		}()
 
-		route.Resource.Set(mux.Vars(r), w, r, &l, s)
+		route.Resource.Set(mux.Vars(r), w, r, &l, route)
 
-		route.Resource.Init()
-
-		switch r.Method {
-		case http.MethodGet:
-			route.Resource.Get()
-			break
-		case http.MethodPost:
-			route.Resource.Post()
-			break
-		case http.MethodPut:
-			route.Resource.Put()
-			break
-		case http.MethodPatch:
-			route.Resource.Patch()
-			break
-		case http.MethodDelete:
-			route.Resource.Delete()
-			break
+		if false != route.Resource.Init() {
+			switch r.Method {
+			case http.MethodGet:
+				route.Resource.Get()
+				break
+			case http.MethodPost:
+				route.Resource.Post()
+				break
+			case http.MethodPut:
+				route.Resource.Put()
+				break
+			case http.MethodPatch:
+				route.Resource.Patch()
+				break
+			case http.MethodDelete:
+				route.Resource.Delete()
+				break
+			}
 		}
 
 		route.Resource.Deinit()
@@ -65,6 +62,8 @@ func (route Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request
 // ApplyRoutes set the Routes given the array of route
 func ApplyRoutes(router *mux.Router, routes Routes, s *Server) *mux.Router {
 	for _, route := range routes {
+		route.Server = s
+
 		router.
 			Path(route.Pattern).
 			Name(route.Name).
