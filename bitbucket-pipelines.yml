@@ -7,5 +7,8 @@ pipelines:
     - step:
         script:
           - mkdir $GOPATH/pkg
+          - echo $GOPATH
+          - pwd
+          - ls
           - go get ./...
           - go test
