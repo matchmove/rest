@@ -6,5 +6,6 @@ pipelines:
   default:
     - step:
         script:
+          - mkdir $GOPATH/pkg
           - go get ./...
           - go test
