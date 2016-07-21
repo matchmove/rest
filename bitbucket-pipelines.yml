@@ -5,4 +5,4 @@ image: golang:latest
 pipelines:
   default:
     - step:
-          - go test
+      - go test
