@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"net"
 )
 
 const (
@@ -60,7 +61,9 @@ func (server *Server) Listen(h func(*mux.Router) http.Handler) {
 	handler := handlers.LoggingHandler(server.AccessLogFile, h(server.Router))
 	defer server.AccessLogFile.Close()
 
-	if err := http.ListenAndServe(":"+server.Port, handler); err != nil {
+	ln, err := net.Listen("tcp4", ":"+server.Port)
+	if err != nil {
 		log.Fatalf("Failed to start server with error `%v`", err)
 	}
+	log.Fatal(http.Serve(ln, handler))
 }
