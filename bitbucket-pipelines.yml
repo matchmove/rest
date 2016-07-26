@@ -8,7 +8,7 @@ pipelines:
         script:
           - mkdir $GOPATH/pkg
           - mkdir -p $GOPATH/src/bitbucket.org
-          - cp ../build $GOPATH/src/bitbucket.org/.
+          - cp -vr ../build $GOPATH/src/bitbucket.org/.
           - cd $GOPATH/src/bitbucket.org/build
           - go get ./...
           - go test
