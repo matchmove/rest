@@ -35,8 +35,6 @@ const (
 	ServerEnvDev = "DEVELOPMENT"
 	// ServerEnvTesting defines the TESTING environment
 	ServerEnvTesting = "TESTING"
-	// ServerEnvUAT defines the UAT environment
-	ServerEnvUAT = "UAT"
 )
 ```
 

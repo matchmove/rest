@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"os"
 
+	"net"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"net"
 )
 
 const (
@@ -15,8 +16,6 @@ const (
 	ServerEnvDev = "DEVELOPMENT"
 	// ServerEnvTesting defines the TESTING environment
 	ServerEnvTesting = "TESTING"
-	// ServerEnvUAT defines the UAT environment
-	ServerEnvUAT = "UAT"
 )
 
 // Server represents information about a rest server.
