@@ -14,4 +14,5 @@ pipelines:
           - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
           - cd "${PACKAGE_PATH}"
           - go get -v
+          - go get github.com/gorilla/handlers
           - go test -v -cover -benchmem -benchtime 5s
