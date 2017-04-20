@@ -1,14 +1,17 @@
-# You can use a Docker image from Docker Hub or your own container
-# registry for your build environment.
-image: golang:latest
+# This is a sample build configuration for Go.
+# Check our guides at https://confluence.atlassian.com/x/5Q4SMw for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: golang:1
 
 pipelines:
   default:
     - step:
-        script:
-          - mkdir $GOPATH/pkg
-          - mkdir -p $GOPATH/src/bitbucket.org
-          - cp -vr ../build $GOPATH/src/bitbucket.org/.
-          - cd $GOPATH/src/bitbucket.org/build
-          - go get ./...
-          - go test
+        script: # Modify the commands below to build your repository.
+          - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}"
+          - mkdir -pv "${PACKAGE_PATH}"
+          - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+          - cd "${PACKAGE_PATH}"
+          - go get -v
+          - go test -v -cover -benchmem -benchtime 5s

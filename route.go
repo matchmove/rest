@@ -2,10 +2,10 @@ package rest
 
 // Test cases are covered in server_test.go
 import (
-	"log"
 	"net/http"
 	"regexp"
 
+	"bitbucket.org/matchmove/logs"
 	"github.com/gorilla/mux"
 )
 
@@ -18,74 +18,70 @@ type Route struct {
 }
 
 // Routes represents a array/collection of Route
-type Routes []Route
+type Routes struct {
+	stack    []Route
+	root     func(http.ResponseWriter, *http.Request)
+	notFound func(http.ResponseWriter, *http.Request)
+}
 
-// NewRoute creates a new route
-func NewRoute(n string, p string, r ResourceType) Route {
-	return Route{Name: n, Pattern: p, Resource: r}
+// DefaultNotFoundRouteHandler is the initial 404 route handler
+func DefaultNotFoundRouteHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", ContentTypeTextPlain)
+	w.WriteHeader(http.StatusNotFound)
+}
+
+// NewRoutes simplifies the initialization of the routes.
+func NewRoutes() Routes {
+	return Routes{
+		notFound: DefaultNotFoundRouteHandler,
+	}
+}
+
+// Add a new Route to the stack
+func (rs Routes) Add(name string, pattern string, c ResourceType) Routes {
+	rs.stack = append(rs.stack, Route{
+		Name:     name,
+		Pattern:  pattern,
+		Resource: c,
+	})
+
+	return rs
+}
+
+// Root assigns the "/" handler
+func (rs Routes) Root(root func(http.ResponseWriter, *http.Request)) Routes {
+	rs.root = root
+	return rs
+}
+
+// NotFound overwrites the current 404 handler
+func (rs Routes) NotFound(custom func(http.ResponseWriter, *http.Request)) Routes {
+	rs.notFound = custom
+	return rs
 }
 
 // GetSimplePattern returns the pattern without the regex rules
-func (route Route) GetSimplePattern() string {
-	reg, err := regexp.Compile(`:[:()?a-zA-Z0-9\[\]\-\|\{\}\\\.]+`)
-	if err != nil {
-		log.Fatal(err)
-	}
+func (r Route) GetSimplePattern() string {
+	reg, _ := regexp.Compile(`:[:()?a-zA-Z0-9\[\]\-\|\{\}\\\.]+`)
 
-	return reg.ReplaceAllString(route.Pattern, "}")
+	return reg.ReplaceAllString(r.Pattern, "}")
 }
 
 // GetHandler is the method that handles the http.HandlerFunc
-func (route Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		l := NewLog()
+func (r Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request) {
+	if s == nil {
+		panic("(s *Server) cannot be `nil`")
+	}
+
+	return func(w http.ResponseWriter, rq *http.Request) {
+		l := logs.New()
+
 		defer func() {
-			if ServerEnvTesting != s.Environment {
+			if ServerEnvTesting != s.Env {
 				l.Dump()
 			}
 		}()
 
-		route.Resource.Set(mux.Vars(r), w, r, &l, route)
-
-		if false != route.Resource.Init() {
-			switch r.Method {
-			case http.MethodGet:
-				route.Resource.Get()
-				break
-			case http.MethodPost:
-				route.Resource.Post()
-				break
-			case http.MethodPut:
-				route.Resource.Put()
-				break
-			case http.MethodPatch:
-				route.Resource.Patch()
-				break
-			case http.MethodDelete:
-				route.Resource.Delete()
-				break
-			}
-		}
-
-		route.Resource.Deinit()
+		r.Resource.set(r.Resource, mux.Vars(rq), w, rq, l, r)
 	}
-}
-
-// ApplyRoutes set the Routes given the array of route
-func ApplyRoutes(router *mux.Router, routes Routes, s *Server) *mux.Router {
-	for _, route := range routes {
-		route.Server = s
-
-		router.
-			Path(route.Pattern).
-			Name(route.Name).
-			Handler(http.HandlerFunc(route.GetHandler(s)))
-	}
-
-	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", ContentTypeTextPlain)
-		w.WriteHeader(http.StatusNotFound)
-	})
-
-	return router
 }

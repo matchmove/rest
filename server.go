@@ -1,13 +1,13 @@
 package rest
 
 import (
-	"log"
+	"fmt"
+	"io"
 	"net/http"
-	"os"
+	"net/url"
 
 	"net"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -16,53 +16,78 @@ const (
 	ServerEnvDev = "DEVELOPMENT"
 	// ServerEnvTesting defines the TESTING environment
 	ServerEnvTesting = "TESTING"
+	// serveConnectionType defines the connection type for the server to listen
+	serveConnectionType = "tcp4"
 )
 
 // Server represents information about a rest server.
 type Server struct {
-	Port        string
-	Environment string
-	AccessLog   string
+	URL *url.URL
+	Env string
 
-	AccessLogFile *os.File
-	Router        *mux.Router
+	// Handler are used in setting http activities like activity logs.
+	// see: github.com/gorilla/handlers
+	Handler http.Handler
+	Router  *mux.Router
+
+	// listener sets the value of the server.Listen when invoked.
+	// Can be used to closed like, net.Listener
+	listener io.Closer
 }
 
-var (
-	// EmptyHandler creates an empty pass through handler
-	EmptyHandler = func(r *mux.Router) http.Handler { return r }
-)
+// EmptyHandler creates an empty pass through handler
+func EmptyHandler(r *mux.Router) http.Handler {
+	return r
+}
 
-// Routes sets up the configuration of the server and creates an instance
-func (server *Server) Routes(r Routes, def func(http.ResponseWriter, *http.Request), router *mux.Router) {
-
-	if router == nil {
-		router = mux.NewRouter().StrictSlash(true)
-	}
-
-	if def != nil {
-		router.HandleFunc("/", def)
-	}
-
-	server.Router = ApplyRoutes(router, r, server)
-
-	accessLog, err := os.Create(server.AccessLog)
+// NewServer initializes an new ReST server
+func NewServer(urlRaw string) (*Server, error) {
+	u, err := url.ParseRequestURI(urlRaw)
 
 	if err != nil {
-		log.Fatalf("Failed to create accesslog file with error `%v`", err)
+		return nil, err
 	}
 
-	server.AccessLogFile = accessLog
+	return &Server{URL: u}, nil
+}
+
+// SetRoutes set the Routes given the array of route
+func (s *Server) SetRoutes(router *mux.Router, routes Routes) *mux.Router {
+	for _, route := range routes.stack {
+		route.Server = s
+
+		router.
+			Path(route.Pattern).
+			Name(route.Name).
+			Handler(http.HandlerFunc(route.GetHandler(s)))
+	}
+
+	if routes.root != nil {
+		router.HandleFunc("/", routes.root)
+	}
+
+	router.NotFoundHandler = http.HandlerFunc(routes.notFound)
+
+	s.Router = router
+	return router
+}
+
+// Listener returns the value of the server.Listen when invoked.
+func (s *Server) Listener() io.Closer {
+	return s.listener
 }
 
 // Listen initiates the handlers
-func (server *Server) Listen(h func(*mux.Router) http.Handler) {
-	handler := handlers.LoggingHandler(server.AccessLogFile, h(server.Router))
-	defer server.AccessLogFile.Close()
+func (s *Server) Listen() error {
+	var (
+		ln  net.Listener
+		err error
+	)
 
-	ln, err := net.Listen("tcp4", ":"+server.Port)
-	if err != nil {
-		log.Fatalf("Failed to start server with error `%v`", err)
+	if ln, err = net.Listen(serveConnectionType, ":"+s.URL.Port()); err != nil {
+		return fmt.Errorf("Failed to start listener with error `%v`", err)
 	}
-	log.Fatal(http.Serve(ln, handler))
+
+	s.listener = ln
+	return http.Serve(ln, s.Handler)
 }

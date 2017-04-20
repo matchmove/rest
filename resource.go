@@ -4,19 +4,15 @@ package rest
 import (
 	"net/http"
 
+	"bitbucket.org/matchmove/logs"
 	"github.com/gorilla/mux"
-)
-
-const (
-	// ContentTypeJSON defines Content-Type for application/json
-	ContentTypeJSON = "application/json"
-	// ContentTypeTextPlain defines Content-Type for text/plain
-	ContentTypeTextPlain = "text/plain"
 )
 
 // ResourceType represents an interface information about a rest resource.
 type ResourceType interface {
-	Set(map[string]string, http.ResponseWriter, *http.Request, *Log, Route)
+	set(ResourceType, map[string]string, http.ResponseWriter, *http.Request, *logs.Log, Route)
+
+	SetContentType(string)
 
 	Init() bool
 
@@ -28,27 +24,61 @@ type ResourceType interface {
 
 	Patch()
 
+	Options()
+
 	Delete()
 
 	Deinit()
 }
+
+const (
+	// ContentTypeJSON defines Content-Type for application/json
+	ContentTypeJSON = "application/json"
+	// ContentTypeTextPlain defines Content-Type for text/plain
+	ContentTypeTextPlain = "text/plain"
+)
 
 // Resource represents the information about the Resource.
 type Resource struct {
 	Vars     map[string]string
 	Response http.ResponseWriter
 	Request  *http.Request
-	Log      *Log
+	Log      *logs.Log
 	Route    Route
 }
 
-// Set method to set the following properties
-func (c *Resource) Set(vars map[string]string, w http.ResponseWriter, r *http.Request, l *Log, rt Route) {
+// set the Resource properties
+func (c *Resource) set(self ResourceType, vars map[string]string, w http.ResponseWriter, r *http.Request, l *logs.Log, rt Route) {
 	c.Vars = mux.Vars(r)
 	c.Response = w
 	c.Request = r
 	c.Log = l
 	c.Route = rt
+
+	if false != self.Init() {
+		switch r.Method {
+		case http.MethodGet:
+			self.Get()
+			break
+		case http.MethodPost:
+			self.Post()
+			break
+		case http.MethodPut:
+			self.Put()
+			break
+		case http.MethodPatch:
+			self.Patch()
+			break
+		case http.MethodOptions:
+			self.Options()
+			break
+		case http.MethodDelete:
+			self.Delete()
+			break
+		}
+	}
+
+	self.Deinit()
 }
 
 // SetContentType method to set the content type
@@ -84,6 +114,11 @@ func (c *Resource) Post() {
 
 // Patch represents http.patch
 func (c *Resource) Patch() {
+	c.SetStatus(http.StatusMethodNotAllowed)
+}
+
+// Options represents http.options
+func (c *Resource) Options() {
 	c.SetStatus(http.StatusMethodNotAllowed)
 }
 

@@ -1,0 +1,6 @@
+[
+  {
+    "files": "**/*.go",
+    "command": "godocdown > readme.md"
+  }
+]
