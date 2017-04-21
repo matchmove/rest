@@ -1,5 +1,3 @@
-read more [/matchmove/rest/src/v2/README.md]
-
 # rest
 --
     import "bitbucket.org/matchmove/rest"
