@@ -2,30 +2,61 @@
 
 ## Example:
 <code>
-func m1ain () {
+// MockResource is a mock resource
+type MockResource struct {
+	rest.Resource
+}
+
+func (c *MockResource) Get() {
+	c.Response.WriteHeader(http.StatusOK)
+	if c.Vars["id"] != "" {
+		fmt.Fprintf(c.Response, ResponseMockWithParams)
+		return
+	}
+
+	fmt.Fprintf(c.Response, ResponseMock)
+}
+
+func (c *MockResource) Post() {
+	fmt.Fprintf(c.Response, ResponseMockPOST)
+}
+
+func (c *MockResource) Put() {
+	fmt.Fprintf(c.Response, ResponseMockPUT)
+}
+
+func (c *MockResource) Patch() {
+	fmt.Fprintf(c.Response, ResponseMockPATCH)
+}
+
+func (c *MockResource) Delete() {
+	fmt.Fprintf(c.Response, ResponseMockDELETE)
+}
+
+func (c *MockResource) Options() {
+	fmt.Fprintf(c.Response, ResponseMockOPTIONS)
+}
+
+// Mock2Resource is another mock resource
+type Mock2Resource struct {
+	rest.Resource
+}
+
+func (c *Mock2Resource) Get() {
+	c.Response.WriteHeader(http.StatusOK)
+	fmt.Fprintf(c.Response, ResponseMock2)
+}
+
+func main () {
     var (
-        aLog        = createTempFile()
-        h           *rest.Host
         s           *rest.Server
         err         error
     )
 
-    if aLog, err = ioutil.TempFile("", ""); err != nil {
-        log.Fatal(err)
-    }
-
-    handler = handlers.LoggingHandler(s.AccessLog, h(s.Router))
-    defer s.AccessLog.Close()
-
-
-    if err = aLog.Close(); err != nil {
-        log.Fatal(err)
-    }
-
-    if s, err = rest.NewServer("http://0.0.0.0:1"); err != nil {
+    if s, err = rest.NewServer("http://0.0.0.0:8999"); err != nil {
         panic(err)
     }
-    
+
     s.SetRoutes(
         mux.NewRouter().StrictSlash(true),
         rest.NewRoutes().
@@ -36,43 +67,28 @@ func m1ain () {
             }).
             NotFound(rest.DefaultNotFoundRouteHandler))
 
-        s.Listen(func(m *mux.Router) http.Handler {
-            channelResp = channelOK
+
+    // Custom handlers using github.com/gorilla/handlers
+    // Adding an AccessLog feature
+    aLog, _ := createTempFile()
+    s.Handler = handlers.LoggingHandler(
+        aLog,
+        func(m *mux.Router) http.Handler {
             return m
-        })
+        }(s.Router),
+    )
 
-    s.Listen()
+    defer func() {
+        aLog.Close()
+        os.Remove(aLog.Name())
+    }()
+
+    err = s.Listen(); err != nil {
+        panic(err)
+    }
+    // Output:
+    // ServerOK!
 }
-
-
-const (
-    channelOK = "ServerOK!"
-)
-
-if h, err = rest.NewHost("http://0.0.0.0:8999"); err != nil {
-    panic(err)
-}
-
-defer os.Remove(aLog.Name())
-
-if s, err = h.NewServer(aLog.Name()); err != nil {
-    panic(err)
-}
-
-s.SetRoutes(
-    mux.NewRouter().StrictSlash(true),
-    rest.NewRoutes().
-        Add("Test", "/test2", new(Mock2Resource)).
-        Add("TestId", "/test/{id}", new(MockResource)).
-        Root(func(w http.ResponseWriter, r *http.Request) {
-            fmt.Fprint(w, ResponseRoot)
-        }).
-        NotFound(rest.DefaultNotFoundRouteHandler))
-
-    s.Listen()
-
-// Output:
-//
 </code>
 
 # rest
