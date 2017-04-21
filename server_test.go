@@ -91,7 +91,7 @@ func TestEmptyHandler(t *testing.T) {
 	}
 }
 
-func TestInvalidPortSetTo1(t *testing.T) {
+func TestInvalidPortSetToCharacter(t *testing.T) {
 	var (
 		aLog, _ = createTempFile()
 		s       *rest.Server
@@ -99,7 +99,7 @@ func TestInvalidPortSetTo1(t *testing.T) {
 	)
 
 	const (
-		failedListen = "Failed to start listener with error `listen tcp4 :1: bind: permission denied`"
+		failedListen = "Failed to start listener with error `listen tcp4: address 9876543210: invalid port`"
 	)
 
 	defer func() {
@@ -107,7 +107,7 @@ func TestInvalidPortSetTo1(t *testing.T) {
 		os.Remove(aLog.Name())
 	}()
 
-	if s, err = rest.NewServer("http://0.0.0.0:1"); err != nil {
+	if s, err = rest.NewServer("http://0.0.0.0:9876543210"); err != nil {
 		panic(err)
 	}
 
@@ -121,16 +121,22 @@ func TestInvalidPortSetTo1(t *testing.T) {
 	sChan := make(chan *rest.Server)
 	go func() {
 		sChan <- s
-		err = s.Listen()
-		if nil == err || failedListen != err.Error() {
-			t.Errorf("Should encounter: %s, instead got, %v", failedListen, err)
+
+		defer func() {
+			if r := recover(); fmt.Sprintf("%v", r) != failedListen {
+				t.Errorf("Should encounter: |%s|, instead got, |%v|", failedListen, r)
+			}
+		}()
+
+		if err = s.Listen(); err != nil {
+			panic(err)
 		}
 	}()
 
 	sResult := <-sChan
 	time.Sleep(10 * time.Millisecond)
 	if sResult.Listener() != nil {
-		t.Error("Server should not successfully start")
+		t.Error("Listener should not be `open`")
 		sResult.Listener().Close()
 	}
 }

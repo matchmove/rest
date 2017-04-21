@@ -79,12 +79,9 @@ func (s *Server) Listener() io.Closer {
 
 // Listen initiates the handlers
 func (s *Server) Listen() error {
-	var (
-		ln  net.Listener
-		err error
-	)
+	ln, err := net.Listen(serveConnectionType, ":"+s.URL.Port())
 
-	if ln, err = net.Listen(serveConnectionType, ":"+s.URL.Port()); err != nil {
+	if err != nil {
 		return fmt.Errorf("Failed to start listener with error `%v`", err)
 	}
 
