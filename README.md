@@ -1,94 +1,4 @@
-# ReST Server
-
-## Example:
-
-    // MockResource is a mock resource
-    type MockResource struct {
-    	rest.Resource
-    }
-
-    func (c *MockResource) Get() {
-    	c.Response.WriteHeader(http.StatusOK)
-    	if c.Vars["id"] != "" {
-    		fmt.Fprintf(c.Response, ResponseMockWithParams)
-    		return
-    	}
-
-    	fmt.Fprintf(c.Response, ResponseMock)
-    }
-
-    func (c *MockResource) Post() {
-    	fmt.Fprintf(c.Response, ResponseMockPOST)
-    }
-
-    func (c *MockResource) Put() {
-    	fmt.Fprintf(c.Response, ResponseMockPUT)
-    }
-
-    func (c *MockResource) Patch() {
-    	fmt.Fprintf(c.Response, ResponseMockPATCH)
-    }
-
-    func (c *MockResource) Delete() {
-    	fmt.Fprintf(c.Response, ResponseMockDELETE)
-    }
-
-    func (c *MockResource) Options() {
-    	fmt.Fprintf(c.Response, ResponseMockOPTIONS)
-    }
-
-    // Mock2Resource is another mock resource
-    type Mock2Resource struct {
-    	rest.Resource
-    }
-
-    func (c *Mock2Resource) Get() {
-    	c.Response.WriteHeader(http.StatusOK)
-    	fmt.Fprintf(c.Response, ResponseMock2)
-    }
-
-    func main () {
-        var (
-            s           *rest.Server
-            err         error
-        )
-
-        if s, err = rest.NewServer("http://0.0.0.0:8999"); err != nil {
-            panic(err)
-        }
-
-        s.SetRoutes(
-            mux.NewRouter().StrictSlash(true),
-            rest.NewRoutes().
-                Add("Test", "/test2", new(Mock2Resource)).
-                Add("TestId", "/test/{id}", new(MockResource)).
-                Root(func(w http.ResponseWriter, r *http.Request) {
-                    fmt.Fprint(w, ResponseRoot)
-                }).
-                NotFound(rest.DefaultNotFoundRouteHandler))
-
-
-        // Custom handlers using github.com/gorilla/handlers
-        // Adding an AccessLog feature
-        aLog, _ := createTempFile()
-        s.Handler = handlers.LoggingHandler(
-            aLog,
-            func(m *mux.Router) http.Handler {
-                return m
-            }(s.Router),
-        )
-
-        defer func() {
-            aLog.Close()
-            os.Remove(aLog.Name())
-        }()
-
-        err = s.Listen(); err != nil {
-            panic(err)
-        }
-        // Output:
-        // ServerOK!
-    }
+read more [/matchmove/rest/src/v2/README.md]
 
 # rest
 --
@@ -348,3 +258,93 @@ Listener returns the value of the server.Listen when invoked.
 func (s *Server) SetRoutes(router *mux.Router, routes Routes) *mux.Router
 ```
 SetRoutes set the Routes given the array of route
+
+## Example:
+
+    // MockResource is a mock resource
+    type MockResource struct {
+    	rest.Resource
+    }
+
+    func (c *MockResource) Get() {
+    	c.Response.WriteHeader(http.StatusOK)
+    	if c.Vars["id"] != "" {
+    		fmt.Fprintf(c.Response, ResponseMockWithParams)
+    		return
+    	}
+
+    	fmt.Fprintf(c.Response, ResponseMock)
+    }
+
+    func (c *MockResource) Post() {
+    	fmt.Fprintf(c.Response, ResponseMockPOST)
+    }
+
+    func (c *MockResource) Put() {
+    	fmt.Fprintf(c.Response, ResponseMockPUT)
+    }
+
+    func (c *MockResource) Patch() {
+    	fmt.Fprintf(c.Response, ResponseMockPATCH)
+    }
+
+    func (c *MockResource) Delete() {
+    	fmt.Fprintf(c.Response, ResponseMockDELETE)
+    }
+
+    func (c *MockResource) Options() {
+    	fmt.Fprintf(c.Response, ResponseMockOPTIONS)
+    }
+
+    // Mock2Resource is another mock resource
+    type Mock2Resource struct {
+    	rest.Resource
+    }
+
+    func (c *Mock2Resource) Get() {
+    	c.Response.WriteHeader(http.StatusOK)
+    	fmt.Fprintf(c.Response, ResponseMock2)
+    }
+
+    func main () {
+        var (
+            s           *rest.Server
+            err         error
+        )
+
+        if s, err = rest.NewServer("http://0.0.0.0:8999"); err != nil {
+            panic(err)
+        }
+
+        s.SetRoutes(
+            mux.NewRouter().StrictSlash(true),
+            rest.NewRoutes().
+                Add("Test", "/test2", new(Mock2Resource)).
+                Add("TestId", "/test/{id}", new(MockResource)).
+                Root(func(w http.ResponseWriter, r *http.Request) {
+                    fmt.Fprint(w, ResponseRoot)
+                }).
+                NotFound(rest.DefaultNotFoundRouteHandler))
+
+
+        // Custom handlers using github.com/gorilla/handlers
+        // Adding an AccessLog feature
+        aLog, _ := createTempFile()
+        s.Handler = handlers.LoggingHandler(
+            aLog,
+            func(m *mux.Router) http.Handler {
+                return m
+            }(s.Router),
+        )
+
+        defer func() {
+            aLog.Close()
+            os.Remove(aLog.Name())
+        }()
+
+        err = s.Listen(); err != nil {
+            panic(err)
+        }
+        // Output:
+        // ServerOK!
+    }
