@@ -1,6 +1,3 @@
 app:
   build: ./
-  dockerfile_path: Dockerfile
-  cached: true
-  volume:
-    /tmp:/data
+  dockerfile: Dockerfile
