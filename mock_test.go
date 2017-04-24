@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"bitbucket.org/matchmove/rest"
+	"github.com/matchmove/rest"
 )
 
 const (

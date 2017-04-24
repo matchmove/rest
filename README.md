@@ -1,6 +1,6 @@
 # rest
 --
-    import "bitbucket.org/matchmove/rest"
+    import "github.com/matchmove/rest"
 
 
 ## Usage

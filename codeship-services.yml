@@ -1,0 +1,5 @@
+app:
+  build:
+    image: golang:1.8
+    dockerfile_path: Dockerfile
+  cached: true

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"bitbucket.org/matchmove/rest"
+	"github.com/matchmove/rest"
 )
 
 func TestResourceDefaultGET(t *testing.T) {

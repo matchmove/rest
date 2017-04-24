@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"bitbucket.org/matchmove/rest"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/matchmove/rest"
 )
 
 func ExampleServer() {

@@ -11,7 +11,7 @@ import (
 	"os"
 	"testing"
 
-	"bitbucket.org/matchmove/rest"
+	"github.com/matchmove/rest"
 )
 
 func TestDefaultNotFoundRoute(t *testing.T) {
