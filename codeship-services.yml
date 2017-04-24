@@ -1,5 +1,6 @@
 app:
-  build:
-    image: golang:1.8
-    dockerfile_path: Dockerfile
+  build: ./
+  dockerfile_path: Dockerfile
   cached: true
+  volume:
+    /tmp:/data
