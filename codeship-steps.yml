@@ -1,6 +1,3 @@
 - name: test
   service: app
-  command: go test -timeout=10000ms -coverprofile=cover.out -short -v
-- name: testReport
-  service: app
-  command: go tool cover -func=cover.out
+  command: sh test-report.sh

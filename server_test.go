@@ -1,177 +1,191 @@
-package rest
+package rest_test
 
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/matchmove/rest"
 )
 
-const (
-	TestResource200Root              = "FooBarTest"
-	TestResource200Message           = "FooBar"
-	TestResource200MessageSub        = "FooBarSub"
-	TestResource200MessageWithParam1 = "FooBar1"
-	TestServerPort                   = "8999"
-	TestServerDomain                 = "http://0.0.0.0:"
-)
+func ExampleServer() {
+	var (
+		aLog, _     = createTempFile()
+		s           *rest.Server
+		request     *http.Request
+		response    *http.Response
+		channelResp string
+		err         error
+	)
 
-type TestResource struct {
-	Resource
-}
+	const (
+		channelOK       = "ServerOK!"
+		waitForResponse = 100 // # of tries before considered timeout
+	)
 
-func (c *TestResource) Get() {
-	c.Response.WriteHeader(http.StatusOK)
-	if c.Vars["id"] != "" {
-		fmt.Fprintf(c.Response, TestResource200MessageWithParam1)
-		return
-	}
+	defer func() {
+		aLog.Close()
+		os.Remove(aLog.Name())
+	}()
 
-	fmt.Fprintf(c.Response, TestResource200Message)
-}
-
-type TestSubResource struct {
-	Resource
-}
-
-func (c *TestSubResource) Get() {
-	c.Response.WriteHeader(http.StatusOK)
-	fmt.Fprintf(c.Response, TestResource200MessageSub)
-}
-
-func TestNewServer(t *testing.T) {
-	lfile, err := ioutil.TempFile("", "")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := lfile.Close(); err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(lfile.Name())
-
-	cfile, fileName := new(Config).NewTempFile(
-		"port: " + TestServerPort +
-			"\nenvironment: " + ServerEnvTesting +
-			"\naccesslog: " + lfile.Name())
-	defer os.Remove(cfile.Name())
-
-	var server Server
-
-	if err := LoadConfig(fileName, &server); err != nil {
+	if s, err = rest.NewServer("http://0.0.0.0:8999"); err != nil {
 		panic(err)
 	}
 
-	server.Routes(Routes{
-		NewRoute("Test", "/test", new(TestResource)),
-		NewRoute("Test", "/test2", new(TestSubResource)),
-		NewRoute("TestId", "/test/{id}", new(TestResource)),
-	}, func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, TestResource200Root)
-	}, nil)
+	s.SetRoutes(
+		mux.NewRouter().StrictSlash(true),
+		rest.NewRoutes().
+			Add("Test", "/test2", new(Mock2Resource)).
+			Add("TestId", "/test/{id}", new(MockResource)).
+			Root(func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprint(w, ResponseRoot)
+			}).
+			NotFound(rest.DefaultNotFoundRouteHandler))
 
-	var channelResponse string
-	channelOk := "CHANNEL OK"
+	s.Handler = handlers.LoggingHandler(
+		aLog,
+		func(m *mux.Router) http.Handler {
+			channelResp = channelOK
+			return m
+		}(s.Router),
+	)
 
 	go func() {
-		server.Listen(func(m *mux.Router) http.Handler {
-			channelResponse = channelOk
-			return m
-		})
+		s.Listen()
 	}()
 
 	//Create request with JSON body
-	request, err := http.NewRequest("GET", TestServerDomain+TestServerPort, strings.NewReader(""))
-
-	if err != nil {
+	if request, err = http.NewRequest("GET", s.URL.String(), strings.NewReader("")); err != nil {
 		panic(err)
 	}
 
-	response, err := http.DefaultClient.Do(request)
-	retryTilGiveUp := 100
-
-	for i := 0; i < retryTilGiveUp; i++ {
+	for i := 0; i < waitForResponse; i++ {
+		time.Sleep(10 * time.Millisecond)
+		response, err = http.DefaultClient.Do(request)
 		if err == nil {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
-		response, err = http.DefaultClient.Do(request)
 	}
 
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("Retry limit exceeded: %v", err))
 	}
 
 	defer response.Body.Close()
 
-	if got, want := response.StatusCode, http.StatusOK; got != want {
-		t.Errorf("Connection response status `%d`, expecting `%d`", got, want)
-	}
+	fmt.Print(channelResp)
 
-	if channelOk != channelResponse {
-		t.Errorf("Server handler response `%v`, expecting `%v`", channelOk, channelResponse)
-	}
+	// Output:
+	// ServerOK!
+}
 
-	bContent, err := ioutil.ReadFile(lfile.Name())
-
-	if err != nil {
-		t.Errorf("Server access log must not have ERR; got `%v`", err)
-	}
-
-	if 0 == len(bContent) {
-		t.Errorf("Server access log must not be empty; got `%v`", len(bContent))
+func TestEmptyHandler(t *testing.T) {
+	if rest.EmptyHandler(nil) == nil {
+		t.Error("EmptyHandler must return the same value that it accepted")
 	}
 }
 
-func runTestCall(t *testing.T, u string, expect string) {
-	//Create request with JSON body
-	request, err := http.NewRequest("GET", TestServerDomain+TestServerPort+u, strings.NewReader(""))
+func TestInvalidPortSetToCharacter(t *testing.T) {
+	var (
+		aLog, _ = createTempFile()
+		s       *rest.Server
+		err     error
+	)
 
-	if err != nil {
+	const (
+		failedListen = "Failed to start listener with error `listen tcp4: address 9876543210: invalid port`"
+	)
+
+	defer func() {
+		aLog.Close()
+		os.Remove(aLog.Name())
+	}()
+
+	if s, err = rest.NewServer("http://0.0.0.0:9876543210"); err != nil {
 		panic(err)
 	}
 
-	response, err := http.DefaultClient.Do(request)
+	s.SetRoutes(
+		mux.NewRouter().StrictSlash(true),
+		rest.NewRoutes().
+			Root(func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprint(w, ResponseRoot)
+			}))
 
-	if err != nil {
-		t.Fatalf("Encountering error in request `%v`", err)
-	}
+	sChan := make(chan *rest.Server)
+	go func() {
+		sChan <- s
 
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+		defer func() {
+			if r := recover(); fmt.Sprintf("%v", r) != failedListen {
+				t.Errorf("Should encounter: |%s|, instead got, |%v|", failedListen, r)
+			}
+		}()
 
-	if err != nil {
-		t.Fatalf("Encountering error in response `%v`", err)
-	}
+		if err = s.Listen(); err != nil {
+			panic(err)
+		}
+	}()
 
-	if got, want := response.StatusCode, http.StatusOK; got != want {
-		t.Errorf("Encountering HTTP status code `%d`, should be `%d`", got, want)
-	}
-
-	if got, want := string(body), expect; got != want {
-		t.Errorf("Encountering response body `%s`, should be `%s`", got, want)
+	sResult := <-sChan
+	time.Sleep(10 * time.Millisecond)
+	if sResult.Listener() != nil {
+		t.Error("Listener should not be `open`")
+		sResult.Listener().Close()
 	}
 }
 
-func TestRootRoute(t *testing.T) {
-	runTestCall(t, "/", TestResource200Root)
+func TestFailedServeWithInvalidHandler(t *testing.T) {
+	var (
+		aLog, _ = createTempFile()
+		s       *rest.Server
+		err     error
+	)
+
+	const (
+		failedListen = "accept tcp4 0.0.0.0:8899: use of closed network connection"
+	)
+
+	defer func() {
+		aLog.Close()
+		os.Remove(aLog.Name())
+	}()
+
+	if s, err = rest.NewServer("http://0.0.0.0:8899"); err != nil {
+		panic(err)
+	}
+
+	s.SetRoutes(mux.NewRouter(), rest.Routes{})
+
+	sChan := make(chan *rest.Server)
+	go func() {
+		sChan <- s
+		err = s.Listen()
+		if nil == err || failedListen != err.Error() {
+			t.Errorf("Should encounter: %s, instead got, %v", failedListen, err)
+		}
+	}()
+
+	sResult := <-sChan
+	time.Sleep(10 * time.Millisecond)
+	if sResult.Listener() != nil {
+		sResult.Listener().Close()
+	}
 }
 
-func TestSampleResource(t *testing.T) {
-	runTestCall(t, "/test", TestResource200Message)
+func TestFailedNewServer(t *testing.T) {
+	if _, err := rest.NewServer(""); err.Error() != "parse : empty url" {
+		t.Error("Expecting `parse : empty url` error, got, ", err)
+	}
+
 }
 
-func TestSampleSubResource(t *testing.T) {
-	runTestCall(t, "/test2", TestResource200MessageSub)
-}
-
-func TestSampleRouteWithoutUrlParamater(t *testing.T) {
-	runTestCall(t, "/test/1", TestResource200MessageWithParam1)
+func createTempFile() (*os.File, error) {
+	return ioutil.TempFile("", "")
 }
