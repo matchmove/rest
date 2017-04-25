@@ -1,5 +1,8 @@
 ![Codeship CI Status](https://codeship.com/projects/f00d5830-0afd-0135-7622-4abc4c11ded6/status?branch=master)
 
+Import (gopkg.in):
+    import "gopkg.in/matchmove/rest.v2"
+
 # rest
 --
     import "github.com/matchmove/rest"
