@@ -1,7 +1,6 @@
 ![Codeship CI Status](https://codeship.com/projects/f00d5830-0afd-0135-7622-4abc4c11ded6/status?branch=master)
 
-Import (gopkg.in):
-    import "gopkg.in/matchmove/rest.v2"
+    import rest "gopkg.in/matchmove/rest.v2"
 
 # rest
 --
@@ -262,11 +261,27 @@ func (s *Server) SetRoutes(router *mux.Router, routes Routes) *mux.Router
 ```
 SetRoutes set the Routes given the array of route
 
-## Example:
+## Example Implementation:
+
+`mock_resource.go`
+
+    package main
+
+    import (
+        "fmt"
+    	"net/http"
+
+        rest "gopkg.in/matchmove/rest.v2"
+    )
 
     // MockResource is a mock resource
     type MockResource struct {
     	rest.Resource
+    }
+
+    // group even the route configuration which will be used in routes.Add
+    func NewMockResource() (string, string, *MockResource) {
+        return "TestId", "/test/{id}", &MockResource{}
     }
 
     func (c *MockResource) Get() {
@@ -299,15 +314,46 @@ SetRoutes set the Routes given the array of route
     	fmt.Fprintf(c.Response, ResponseMockOPTIONS)
     }
 
+
+`mock2_resource.go`
+
+    package main
+
+    import (
+        "fmt"
+        "net/http"
+
+        rest "gopkg.in/matchmove/rest.v2"
+    )
+
     // Mock2Resource is another mock resource
     type Mock2Resource struct {
     	rest.Resource
+    }
+
+    func NewMock2Resource() (string, string, *Mock2Resource) {
+        return "Test", "/test2", &Mock2Resource
     }
 
     func (c *Mock2Resource) Get() {
     	c.Response.WriteHeader(http.StatusOK)
     	fmt.Fprintf(c.Response, ResponseMock2)
     }
+
+
+`main.go`
+
+    package main
+
+    import (
+        "fmt"
+        "net/http"
+
+        "github.com/gorilla/handlers"
+    	"github.com/gorilla/mux"
+
+        rest "gopkg.in/matchmove/rest.v2"
+    )
 
     func main () {
         var (
@@ -322,23 +368,22 @@ SetRoutes set the Routes given the array of route
         s.SetRoutes(
             mux.NewRouter().StrictSlash(true),
             rest.NewRoutes().
-                Add("Test", "/test2", new(Mock2Resource)).
-                Add("TestId", "/test/{id}", new(MockResource)).
+                Add(NewMock2Resource()).
+                Add(NewMockResource()).
                 Root(func(w http.ResponseWriter, r *http.Request) {
                     fmt.Fprint(w, ResponseRoot)
                 }).
                 NotFound(rest.DefaultNotFoundRouteHandler))
 
-
         // Custom handlers using github.com/gorilla/handlers
         // Adding an AccessLog feature
-        aLog, _ := createTempFile()
+        aLog, _ := ioutil.TempFile("", "")
+
         s.Handler = handlers.LoggingHandler(
             aLog,
             func(m *mux.Router) http.Handler {
                 return m
-            }(s.Router),
-        )
+            }(s.Router))
 
         defer func() {
             aLog.Close()
@@ -349,5 +394,5 @@ SetRoutes set the Routes given the array of route
             panic(err)
         }
         // Output:
-        // ServerOK!
+        //
     }
