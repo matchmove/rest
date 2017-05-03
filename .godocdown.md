@@ -1,5 +1,6 @@
 ![Codeship CI Status](https://codeship.com/projects/f00d5830-0afd-0135-7622-4abc4c11ded6/status?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/matchmove/rest)](https://goreportcard.com/report/github.com/matchmove/rest)
+[![GoDoc](https://godoc.org/github.com/matchmove/rest?status.svg)](https://godoc.org/github.com/matchmove/rest)
 
     import "gopkg.in/matchmove/rest.v2"
 
