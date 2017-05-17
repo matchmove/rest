@@ -4,8 +4,8 @@ package rest
 import (
 	"net/http"
 
-	"bitbucket.org/matchmove/logs"
 	"github.com/gorilla/mux"
+	"gopkg.in/matchmove/rest.v2/logs"
 )
 
 // ResourceType represents an interface information about a rest resource.

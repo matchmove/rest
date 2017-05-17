@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"regexp"
 
-	"bitbucket.org/matchmove/logs"
 	"github.com/gorilla/mux"
+	"gopkg.in/matchmove/rest.v2/logs"
 )
 
 // Route represents the struct of Route
