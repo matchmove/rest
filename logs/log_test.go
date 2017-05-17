@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/matchmove/rest.v2/logs"
+	"github.com/matchmove/rest/logs"
 )
 
 func TestNew(t *testing.T) {

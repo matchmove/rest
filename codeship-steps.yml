@@ -1,3 +1,6 @@
-- name: test
-  service: app
-  command: sh test-report.sh
+- type: parallel
+  services:
+  - app
+  steps:
+  - command: sh test-report.sh .
+  - command: sh test-report.sh ./logs

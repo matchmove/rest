@@ -1,4 +1,4 @@
 #!/bin/sh
-go test ./... -timeout=10000ms -coverprofile=cover.out -short -v
-go tool cover -func=cover.out
-rm -rf cover.out
+go test $1 -timeout=10000ms -coverprofile=$1/cover.out -short -v
+go tool cover -func=$1/cover.out
+rm -rf $1/cover.out
