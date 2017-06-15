@@ -86,5 +86,10 @@ func (s *Server) Listen() error {
 	}
 
 	s.listener = ln
+
+	if s.Handler == nil {
+		return http.Serve(ln, s.Router)
+	}
+
 	return http.Serve(ln, s.Handler)
 }

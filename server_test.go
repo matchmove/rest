@@ -48,6 +48,7 @@ func ExampleServer() {
 			}).
 			NotFound(rest.DefaultNotFoundRouteHandler))
 
+	// when .Handler is used, extend it from the .Router property
 	s.Handler = handlers.LoggingHandler(
 		aLog,
 		func(m *mux.Router) http.Handler {
