@@ -381,6 +381,7 @@ SetRoutes set the Routes given the array of route
         // Adding an AccessLog feature
         aLog, _ := ioutil.TempFile("", "")
 
+        // when .Handler is used, extend it from the .Router property
         s.Handler = handlers.LoggingHandler(
             aLog,
             func(m *mux.Router) http.Handler {
