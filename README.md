@@ -57,12 +57,20 @@ type Resource struct {
 
 Resource represents the information about the Resource.
 
+#### func (*Resource) Defer
+
+```go
+func (c *Resource) Defer()
+```
+Defer is triggered after all execution (including Deinit() and faulty
+executions)
+
 #### func (*Resource) Deinit
 
 ```go
 func (c *Resource) Deinit()
 ```
-Deinit method that finalizes the Resource.
+Deinit method that finalizes the Resource
 
 #### func (*Resource) Delete
 
@@ -149,6 +157,8 @@ type ResourceType interface {
 	Delete()
 
 	Deinit()
+
+	Defer()
 	// contains filtered or unexported methods
 }
 ```

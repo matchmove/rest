@@ -29,6 +29,8 @@ type ResourceType interface {
 	Delete()
 
 	Deinit()
+
+	Defer()
 }
 
 const (
@@ -54,6 +56,8 @@ func (c *Resource) set(self ResourceType, vars map[string]string, w http.Respons
 	c.Request = r
 	c.Log = l
 	c.Route = rt
+
+	defer self.Defer()
 
 	if false != self.Init() {
 		switch r.Method {
@@ -127,5 +131,8 @@ func (c *Resource) Delete() {
 	c.SetStatus(http.StatusMethodNotAllowed)
 }
 
-// Deinit method that finalizes the Resource.
+// Deinit method that finalizes the Resource
 func (c *Resource) Deinit() {}
+
+// Defer is triggered after all execution (including Deinit() and faulty executions)
+func (c *Resource) Defer() {}
