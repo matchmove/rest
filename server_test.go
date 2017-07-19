@@ -39,8 +39,8 @@ func ExampleServer() {
 	s.SetRoutes(
 		mux.NewRouter().StrictSlash(true),
 		rest.NewRoutes().
-			Add("Test", "/test2", &Mock2Resource{}).
-			Add("TestId", "/test/{id}", &MockResource{}).
+			Add("Test", "/test2", func() rest.ResourceType { return &Mock2Resource{} }).
+			Add("TestId", "/test/{id}", func() rest.ResourceType { return &MockResource{} }).
 			Root(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, ResponseRoot)
 			}).
@@ -91,9 +91,12 @@ func ExampleServer() {
 			break
 		}
 	}
-	fmt.Println(<-chanBody)
+	go fn("", chanBody)
+	fmt.Println(<-chanBody) // regular response
+	fmt.Println(<-chanBody) // persistency check response
 	// Output:
 	// ThisIsReST
+	// FooBar1
 }
 
 func TestEmptyHandler(t *testing.T) {

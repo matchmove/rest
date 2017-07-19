@@ -18,19 +18,19 @@ type ResourceType interface {
 
 	Init() bool
 
-	Get() (status int, body interface{})
+	Get()
 
-	Put() (status int, body interface{})
+	Put()
 
-	Post() (status int, body interface{})
+	Post()
 
-	Patch() (status int, body interface{})
+	Patch()
 
-	Options() (status int, body interface{})
+	Options()
 
-	Delete() (status int, body interface{})
+	Delete()
 
-	Done(status int, body interface{})
+	Done()
 
 	Defer()
 }
@@ -67,15 +67,13 @@ func (c *Resource) set(self ResourceType, vars map[string]string, w http.Respons
 	}
 
 	defer metCall("Defer")
-	//rc.Method
 
-	var response []reflect.Value
 	if false != metCall("Init")[0].Bool() {
 		// Call HTTP Method using Camelcase
-		response = metCall(r.Method[0:1] + strings.ToLower(r.Method)[1:])
+		metCall(r.Method[0:1] + strings.ToLower(r.Method)[1:])
 	}
 
-	metCall("Done", response...)
+	metCall("Done")
 }
 
 // SetContentType method to set the content type
@@ -95,43 +93,37 @@ func (c *Resource) Init() bool {
 }
 
 // Get represents http.get
-func (c *Resource) Get() (status int, body interface{}) {
+func (c *Resource) Get() {
 	c.SetStatus(http.StatusMethodNotAllowed)
-	return status, body
 }
 
 // Put represents http.put
-func (c *Resource) Put() (status int, body interface{}) {
+func (c *Resource) Put() {
 	c.SetStatus(http.StatusMethodNotAllowed)
-	return status, body
 }
 
 // Post represents http.post
-func (c *Resource) Post() (status int, body interface{}) {
+func (c *Resource) Post() {
 	c.SetStatus(http.StatusMethodNotAllowed)
-	return status, body
 }
 
 // Patch represents http.patch
-func (c *Resource) Patch() (status int, body interface{}) {
+func (c *Resource) Patch() {
 	c.SetStatus(http.StatusMethodNotAllowed)
-	return status, body
 }
 
 // Options represents http.options
-func (c *Resource) Options() (status int, body interface{}) {
+func (c *Resource) Options() {
 	c.SetStatus(http.StatusMethodNotAllowed)
-	return status, body
 }
 
 // Delete represents http.delete
-func (c *Resource) Delete() (status int, body interface{}) {
+func (c *Resource) Delete() {
 	c.SetStatus(http.StatusMethodNotAllowed)
-	return status, body
 }
 
 // Done method that finalizes the Resource
-func (c *Resource) Done(status int, body interface{}) {}
+func (c *Resource) Done() {}
 
 // Defer is triggered after all execution (including Deinit() and faulty executions)
 func (c *Resource) Defer() {}

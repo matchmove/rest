@@ -68,21 +68,21 @@ executions)
 #### func (*Resource) Delete
 
 ```go
-func (c *Resource) Delete() (status int, body interface{})
+func (c *Resource) Delete()
 ```
 Delete represents http.delete
 
 #### func (*Resource) Done
 
 ```go
-func (c *Resource) Done(status int, body interface{})
+func (c *Resource) Done()
 ```
 Done method that finalizes the Resource
 
 #### func (*Resource) Get
 
 ```go
-func (c *Resource) Get() (status int, body interface{})
+func (c *Resource) Get()
 ```
 Get represents http.get
 
@@ -97,28 +97,28 @@ the method and proceed to deinit()
 #### func (*Resource) Options
 
 ```go
-func (c *Resource) Options() (status int, body interface{})
+func (c *Resource) Options()
 ```
 Options represents http.options
 
 #### func (*Resource) Patch
 
 ```go
-func (c *Resource) Patch() (status int, body interface{})
+func (c *Resource) Patch()
 ```
 Patch represents http.patch
 
 #### func (*Resource) Post
 
 ```go
-func (c *Resource) Post() (status int, body interface{})
+func (c *Resource) Post()
 ```
 Post represents http.post
 
 #### func (*Resource) Put
 
 ```go
-func (c *Resource) Put() (status int, body interface{})
+func (c *Resource) Put()
 ```
 Put represents http.put
 
@@ -144,19 +144,19 @@ type ResourceType interface {
 
 	Init() bool
 
-	Get() (status int, body interface{})
+	Get()
 
-	Put() (status int, body interface{})
+	Put()
 
-	Post() (status int, body interface{})
+	Post()
 
-	Patch() (status int, body interface{})
+	Patch()
 
-	Options() (status int, body interface{})
+	Options()
 
-	Delete() (status int, body interface{})
+	Delete()
 
-	Done(status int, body interface{})
+	Done()
 
 	Defer()
 	// contains filtered or unexported methods
@@ -169,10 +169,10 @@ ResourceType represents an interface information about a rest resource.
 
 ```go
 type Route struct {
-	Name     string
-	Pattern  string
-	Resource ResourceType
-	Server   *Server
+	Name                 string
+	Pattern              string
+	ResourceInstantiator func() ResourceType
+	Server               *Server
 }
 ```
 
@@ -211,7 +211,7 @@ NewRoutes simplifies the initialization of the routes.
 #### func (Routes) Add
 
 ```go
-func (rs Routes) Add(name string, pattern string, c ResourceType) Routes
+func (rs Routes) Add(name string, pattern string, resourceInstantiator func() ResourceType) Routes
 ```
 Add a new Route to the stack
 
@@ -291,9 +291,19 @@ SetRoutes set the Routes given the array of route
     	rest.Resource
     }
 
+    const (
+    	ResponseMock           = "FooBar"
+    	ResponseMockPOST       = "FooBarPOST"
+    	ResponseMockPUT        = "FooBarPUT"
+    	ResponseMockPATCH      = "FooBarPATCH"
+    	ResponseMockOPTIONS    = "FooBarOPTIONS"
+    	ResponseMockDELETE     = "FooBarDELETE"
+    	ResponseMockWithParams = "FooBar1"
+    )
+
     // group even the route configuration which will be used in routes.Add
-    func NewMockResource() (string, string, *MockResource) {
-        return "TestId", "/test/{id}", &MockResource{}
+    func NewMockResource() (string, string, func() rest.ResourceType) {
+        return "TestId", "/test/{id}", func() rest.ResourceType { return &MockResource{} }
     }
 
     func (c *MockResource) Get() {
@@ -307,23 +317,28 @@ SetRoutes set the Routes given the array of route
     }
 
     func (c *MockResource) Post() {
-    	fmt.Fprintf(c.Response, ResponseMockPOST)
+      fmt.Println(http.StatusOK)
+      fmt.Println(ResponseMockPOST)
     }
 
     func (c *MockResource) Put() {
-    	fmt.Fprintf(c.Response, ResponseMockPUT)
+      fmt.Println(http.StatusOK)
+      fmt.Println(ResponseMockPUT)
     }
 
     func (c *MockResource) Patch() {
-    	fmt.Fprintf(c.Response, ResponseMockPATCH)
+      fmt.Println(http.StatusOK)
+      fmt.Println(ResponseMockPATCH)
     }
 
     func (c *MockResource) Delete() {
-    	fmt.Fprintf(c.Response, ResponseMockDELETE)
+      fmt.Println(http.StatusOK)
+      fmt.Println(ResponseMockDELETE)
     }
 
     func (c *MockResource) Options() {
-    	fmt.Fprintf(c.Response, ResponseMockOPTIONS)
+      fmt.Println(http.StatusOK)
+      fmt.Println(ResponseMockOPTIONS)
     }
 
 
@@ -343,13 +358,17 @@ SetRoutes set the Routes given the array of route
     	rest.Resource
     }
 
-    func NewMock2Resource() (string, string, *Mock2Resource) {
-        return "Test", "/test2", &Mock2Resource
+    const (
+    	ResponseMock2 = "FooBarSub"
+    )
+
+    func NewMock2Resource() (string, string, func() rest.ResourceType) {
+        return "Test", "/test2", func() rest.ResourceType { return &Mock2Resource{} }
     }
 
     func (c *Mock2Resource) Get() {
-    	c.Response.WriteHeader(http.StatusOK)
-    	fmt.Fprintf(c.Response, ResponseMock2)
+      fmt.Println(http.StatusOK)
+      fmt.Println(ResponseMock2)
     }
 
 

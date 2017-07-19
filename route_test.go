@@ -61,7 +61,7 @@ func TestGetHandlerWithNilServer(t *testing.T) {
 		}
 	}()
 
-	route := rest.Route{Resource: new(MockResource)}
+	route := rest.Route{ResourceInstantiator: func() rest.ResourceType { return new(MockResource) }}
 	route.GetHandler(nil)
 }
 
