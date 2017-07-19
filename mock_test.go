@@ -26,7 +26,7 @@ type MockResource struct {
 	Param string
 }
 
-func (c MockResource) Get() {
+func (c *MockResource) Get() (status int, body interface{}) {
 	c.Response.WriteHeader(http.StatusOK)
 	if o := c.Request.URL.Query().Get("out"); "" != o {
 		c.Param = o
@@ -43,26 +43,32 @@ func (c MockResource) Get() {
 	}
 
 	fmt.Fprintf(c.Response, ResponseMock)
+	return status, body
 }
 
-func (c MockResource) Post() {
+func (c *MockResource) Post() (status int, body interface{}) {
 	fmt.Fprintf(c.Response, ResponseMockPOST)
+	return status, body
 }
 
-func (c MockResource) Put() {
+func (c *MockResource) Put() (status int, body interface{}) {
 	fmt.Fprintf(c.Response, ResponseMockPUT)
+	return status, body
 }
 
-func (c MockResource) Patch() {
+func (c *MockResource) Patch() (status int, body interface{}) {
 	fmt.Fprintf(c.Response, ResponseMockPATCH)
+	return status, body
 }
 
-func (c MockResource) Delete() {
+func (c *MockResource) Delete() (status int, body interface{}) {
 	fmt.Fprintf(c.Response, ResponseMockDELETE)
+	return status, body
 }
 
-func (c MockResource) Options() {
+func (c *MockResource) Options() (status int, body interface{}) {
 	fmt.Fprintf(c.Response, ResponseMockOPTIONS)
+	return status, body
 }
 
 // Another Mock Resource
@@ -70,19 +76,21 @@ type Mock2Resource struct {
 	rest.Resource
 }
 
-func (c Mock2Resource) Get() {
+func (c *Mock2Resource) Get() (status int, body interface{}) {
 	c.Response.WriteHeader(http.StatusOK)
 	fmt.Fprintf(c.Response, ResponseMock2)
+	return status, body
 }
 
 type MockJSONResource struct {
 	rest.Resource
 }
 
-func (c MockJSONResource) Get() {
+func (c *MockJSONResource) Get() (status int, body interface{}) {
 	c.Response.WriteHeader(http.StatusOK)
 	c.SetContentType(rest.ContentTypeTextPlain)
 	fmt.Fprintf(c.Response, `{"foo":"bar"}`)
+	return status, body
 }
 
 func GetHandlerResponse(resource rest.ResourceType, method string) *http.Response {

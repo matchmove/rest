@@ -39,8 +39,8 @@ func ExampleServer() {
 	s.SetRoutes(
 		mux.NewRouter().StrictSlash(true),
 		rest.NewRoutes().
-			Add("Test", "/test2", new(Mock2Resource)).
-			Add("TestId", "/test/{id}", new(MockResource)).
+			Add("Test", "/test2", &Mock2Resource{}).
+			Add("TestId", "/test/{id}", &MockResource{}).
 			Root(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, ResponseRoot)
 			}).
@@ -84,18 +84,16 @@ func ExampleServer() {
 		c <- string(bytesBody)
 	}
 
-	go fn("?out=a", chanBody)
+	go fn("?out=ThisIsReST", chanBody)
 	for i := 0; i < waitForResponse; i++ {
 		time.Sleep(10 * time.Millisecond)
 		if err == nil {
 			break
 		}
 	}
-	go fn("", chanBody)
-	fmt.Println(<-chanBody)
 	fmt.Println(<-chanBody)
 	// Output:
-	// FooBarTest
+	// ThisIsReST
 }
 
 func TestEmptyHandler(t *testing.T) {

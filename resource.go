@@ -3,6 +3,8 @@ package rest
 // Test cases are covered in server_test.go
 import (
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"gopkg.in/matchmove/rest.v2/logs"
@@ -16,19 +18,19 @@ type ResourceType interface {
 
 	Init() bool
 
-	Get()
+	Get() (status int, body interface{})
 
-	Put()
+	Put() (status int, body interface{})
 
-	Post()
+	Post() (status int, body interface{})
 
-	Patch()
+	Patch() (status int, body interface{})
 
-	Options()
+	Options() (status int, body interface{})
 
-	Delete()
+	Delete() (status int, body interface{})
 
-	Deinit()
+	Done(status int, body interface{})
 
 	Defer()
 }
@@ -49,7 +51,7 @@ type Resource struct {
 	Route    Route
 }
 
-// set the Resource properties
+// Set the Resource properties
 func (c *Resource) set(self ResourceType, vars map[string]string, w http.ResponseWriter, r *http.Request, l *logs.Log, rt Route) {
 	c.Vars = mux.Vars(r)
 	c.Response = w
@@ -57,32 +59,23 @@ func (c *Resource) set(self ResourceType, vars map[string]string, w http.Respons
 	c.Log = l
 	c.Route = rt
 
-	defer self.Defer()
+	rc := reflect.ValueOf(self)
 
-	if false != self.Init() {
-		switch r.Method {
-		case http.MethodGet:
-			self.Get()
-			break
-		case http.MethodPost:
-			self.Post()
-			break
-		case http.MethodPut:
-			self.Put()
-			break
-		case http.MethodPatch:
-			self.Patch()
-			break
-		case http.MethodOptions:
-			self.Options()
-			break
-		case http.MethodDelete:
-			self.Delete()
-			break
-		}
+	var metCall = func(name string, v ...reflect.Value) []reflect.Value {
+		fn := rc.MethodByName(name)
+		return fn.Call(v)
 	}
 
-	self.Deinit()
+	defer metCall("Defer")
+	//rc.Method
+
+	var response []reflect.Value
+	if false != metCall("Init")[0].Bool() {
+		// Call HTTP Method using Camelcase
+		response = metCall(r.Method[0:1] + strings.ToLower(r.Method)[1:])
+	}
+
+	metCall("Done", response...)
 }
 
 // SetContentType method to set the content type
@@ -102,37 +95,43 @@ func (c *Resource) Init() bool {
 }
 
 // Get represents http.get
-func (c *Resource) Get() {
+func (c *Resource) Get() (status int, body interface{}) {
 	c.SetStatus(http.StatusMethodNotAllowed)
+	return status, body
 }
 
 // Put represents http.put
-func (c *Resource) Put() {
+func (c *Resource) Put() (status int, body interface{}) {
 	c.SetStatus(http.StatusMethodNotAllowed)
+	return status, body
 }
 
 // Post represents http.post
-func (c *Resource) Post() {
+func (c *Resource) Post() (status int, body interface{}) {
 	c.SetStatus(http.StatusMethodNotAllowed)
+	return status, body
 }
 
 // Patch represents http.patch
-func (c *Resource) Patch() {
+func (c *Resource) Patch() (status int, body interface{}) {
 	c.SetStatus(http.StatusMethodNotAllowed)
+	return status, body
 }
 
 // Options represents http.options
-func (c *Resource) Options() {
+func (c *Resource) Options() (status int, body interface{}) {
 	c.SetStatus(http.StatusMethodNotAllowed)
+	return status, body
 }
 
 // Delete represents http.delete
-func (c *Resource) Delete() {
+func (c *Resource) Delete() (status int, body interface{}) {
 	c.SetStatus(http.StatusMethodNotAllowed)
+	return status, body
 }
 
-// Deinit method that finalizes the Resource
-func (c *Resource) Deinit() {}
+// Done method that finalizes the Resource
+func (c *Resource) Done(status int, body interface{}) {}
 
 // Defer is triggered after all execution (including Deinit() and faulty executions)
 func (c *Resource) Defer() {}

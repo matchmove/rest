@@ -65,24 +65,24 @@ func (c *Resource) Defer()
 Defer is triggered after all execution (including Deinit() and faulty
 executions)
 
-#### func (*Resource) Deinit
-
-```go
-func (c *Resource) Deinit()
-```
-Deinit method that finalizes the Resource
-
 #### func (*Resource) Delete
 
 ```go
-func (c *Resource) Delete()
+func (c *Resource) Delete() (status int, body interface{})
 ```
 Delete represents http.delete
+
+#### func (*Resource) Done
+
+```go
+func (c *Resource) Done(status int, body interface{})
+```
+Done method that finalizes the Resource
 
 #### func (*Resource) Get
 
 ```go
-func (c *Resource) Get()
+func (c *Resource) Get() (status int, body interface{})
 ```
 Get represents http.get
 
@@ -97,28 +97,28 @@ the method and proceed to deinit()
 #### func (*Resource) Options
 
 ```go
-func (c *Resource) Options()
+func (c *Resource) Options() (status int, body interface{})
 ```
 Options represents http.options
 
 #### func (*Resource) Patch
 
 ```go
-func (c *Resource) Patch()
+func (c *Resource) Patch() (status int, body interface{})
 ```
 Patch represents http.patch
 
 #### func (*Resource) Post
 
 ```go
-func (c *Resource) Post()
+func (c *Resource) Post() (status int, body interface{})
 ```
 Post represents http.post
 
 #### func (*Resource) Put
 
 ```go
-func (c *Resource) Put()
+func (c *Resource) Put() (status int, body interface{})
 ```
 Put represents http.put
 
@@ -144,19 +144,19 @@ type ResourceType interface {
 
 	Init() bool
 
-	Get()
+	Get() (status int, body interface{})
 
-	Put()
+	Put() (status int, body interface{})
 
-	Post()
+	Post() (status int, body interface{})
 
-	Patch()
+	Patch() (status int, body interface{})
 
-	Options()
+	Options() (status int, body interface{})
 
-	Delete()
+	Delete() (status int, body interface{})
 
-	Deinit()
+	Done(status int, body interface{})
 
 	Defer()
 	// contains filtered or unexported methods
