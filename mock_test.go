@@ -23,10 +23,20 @@ const (
 // Mock Resource
 type MockResource struct {
 	rest.Resource
+	Param string
 }
 
 func (c *MockResource) Get() {
 	c.Response.WriteHeader(http.StatusOK)
+	if o := c.Request.URL.Query().Get("out"); "" != o {
+		c.Param = o
+	}
+
+	if c.Param != "" {
+		fmt.Fprintf(c.Response, c.Param)
+		return
+	}
+
 	if c.Vars["id"] != "" {
 		fmt.Fprintf(c.Response, ResponseMockWithParams)
 		return
@@ -80,7 +90,7 @@ func GetHandlerResponse(resource rest.ResourceType, method string) *http.Respons
 }
 
 func GetServerHandlerResponse(resource rest.ResourceType, method string, s *rest.Server) *http.Response {
-	route := rest.Route{Resource: resource}
+	route := rest.Route{ResourceInstantiator: func() rest.ResourceType { return resource }}
 	handler := route.GetHandler(s)
 
 	w := httptest.NewRecorder()

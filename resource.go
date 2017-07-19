@@ -3,6 +3,8 @@ package rest
 // Test cases are covered in server_test.go
 import (
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"gopkg.in/matchmove/rest.v2/logs"
@@ -28,7 +30,7 @@ type ResourceType interface {
 
 	Delete()
 
-	Deinit()
+	Done()
 
 	Defer()
 }
@@ -49,7 +51,7 @@ type Resource struct {
 	Route    Route
 }
 
-// set the Resource properties
+// Set the Resource properties
 func (c *Resource) set(self ResourceType, vars map[string]string, w http.ResponseWriter, r *http.Request, l *logs.Log, rt Route) {
 	c.Vars = mux.Vars(r)
 	c.Response = w
@@ -57,32 +59,21 @@ func (c *Resource) set(self ResourceType, vars map[string]string, w http.Respons
 	c.Log = l
 	c.Route = rt
 
-	defer self.Defer()
+	rc := reflect.ValueOf(self)
 
-	if false != self.Init() {
-		switch r.Method {
-		case http.MethodGet:
-			self.Get()
-			break
-		case http.MethodPost:
-			self.Post()
-			break
-		case http.MethodPut:
-			self.Put()
-			break
-		case http.MethodPatch:
-			self.Patch()
-			break
-		case http.MethodOptions:
-			self.Options()
-			break
-		case http.MethodDelete:
-			self.Delete()
-			break
-		}
+	var metCall = func(name string, v ...reflect.Value) []reflect.Value {
+		fn := rc.MethodByName(name)
+		return fn.Call(v)
 	}
 
-	self.Deinit()
+	defer metCall("Defer")
+
+	if false != metCall("Init")[0].Bool() {
+		// Call HTTP Method using Camelcase
+		metCall(r.Method[0:1] + strings.ToLower(r.Method)[1:])
+	}
+
+	metCall("Done")
 }
 
 // SetContentType method to set the content type
@@ -131,8 +122,8 @@ func (c *Resource) Delete() {
 	c.SetStatus(http.StatusMethodNotAllowed)
 }
 
-// Deinit method that finalizes the Resource
-func (c *Resource) Deinit() {}
+// Done method that finalizes the Resource
+func (c *Resource) Done() {}
 
 // Defer is triggered after all execution (including Deinit() and faulty executions)
 func (c *Resource) Defer() {}

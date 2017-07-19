@@ -11,10 +11,10 @@ import (
 
 // Route represents the struct of Route
 type Route struct {
-	Name     string
-	Pattern  string
-	Resource ResourceType
-	Server   *Server
+	Name                 string
+	Pattern              string
+	ResourceInstantiator func() ResourceType
+	Server               *Server
 }
 
 // Routes represents a array/collection of Route
@@ -38,11 +38,11 @@ func NewRoutes() Routes {
 }
 
 // Add a new Route to the stack
-func (rs Routes) Add(name string, pattern string, c ResourceType) Routes {
+func (rs Routes) Add(name string, pattern string, resourceInstantiator func() ResourceType) Routes {
 	rs.stack = append(rs.stack, Route{
-		Name:     name,
-		Pattern:  pattern,
-		Resource: c,
+		Name:                 name,
+		Pattern:              pattern,
+		ResourceInstantiator: resourceInstantiator,
 	})
 
 	return rs
@@ -82,6 +82,8 @@ func (r Route) GetHandler(s *Server) func(http.ResponseWriter, *http.Request) {
 			}
 		}()
 
-		r.Resource.set(r.Resource, mux.Vars(rq), w, rq, l, r)
+		resource := r.ResourceInstantiator()
+
+		resource.set(resource, mux.Vars(rq), w, rq, l, r)
 	}
 }

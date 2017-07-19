@@ -16,16 +16,13 @@ import (
 
 func ExampleServer() {
 	var (
-		aLog, _     = createTempFile()
-		s           *rest.Server
-		request     *http.Request
-		response    *http.Response
-		channelResp string
-		err         error
+		aLog, _  = createTempFile()
+		s        *rest.Server
+		chanBody = make(chan string)
+		err      error
 	)
 
 	const (
-		channelOK       = "ServerOK!"
 		waitForResponse = 100 // # of tries before considered timeout
 	)
 
@@ -38,11 +35,12 @@ func ExampleServer() {
 		panic(err)
 	}
 
+	s.Env = rest.ServerEnvTesting
 	s.SetRoutes(
 		mux.NewRouter().StrictSlash(true),
 		rest.NewRoutes().
-			Add("Test", "/test2", new(Mock2Resource)).
-			Add("TestId", "/test/{id}", new(MockResource)).
+			Add("Test", "/test2", func() rest.ResourceType { return &Mock2Resource{} }).
+			Add("TestId", "/test/{id}", func() rest.ResourceType { return &MockResource{} }).
 			Root(func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprint(w, ResponseRoot)
 			}).
@@ -52,7 +50,6 @@ func ExampleServer() {
 	s.Handler = handlers.LoggingHandler(
 		aLog,
 		func(m *mux.Router) http.Handler {
-			channelResp = channelOK
 			return m
 		}(s.Router),
 	)
@@ -61,29 +58,45 @@ func ExampleServer() {
 		s.Listen()
 	}()
 
-	//Create request with JSON body
-	if request, err = http.NewRequest("GET", s.URL.String(), strings.NewReader("")); err != nil {
-		panic(err)
+	var fn = func(q string, c chan string) {
+		var (
+			request  *http.Request
+			response *http.Response
+		)
+		//Create request with JSON body
+		if request, err = http.NewRequest("GET", s.URL.String()+"/test/1"+q, strings.NewReader("")); err != nil {
+			panic(err)
+		}
+
+		for i := 0; i < waitForResponse; i++ {
+			time.Sleep(10 * time.Millisecond)
+			response, err = http.DefaultClient.Do(request)
+			if err == nil {
+				break
+			}
+		}
+
+		if err != nil {
+			panic(fmt.Sprintf("Retry limit exceeded: %v", err))
+		}
+		defer response.Body.Close()
+		bytesBody, _ := ioutil.ReadAll(response.Body)
+		c <- string(bytesBody)
 	}
 
+	go fn("?out=ThisIsReST", chanBody)
 	for i := 0; i < waitForResponse; i++ {
 		time.Sleep(10 * time.Millisecond)
-		response, err = http.DefaultClient.Do(request)
 		if err == nil {
 			break
 		}
 	}
-
-	if err != nil {
-		panic(fmt.Sprintf("Retry limit exceeded: %v", err))
-	}
-
-	defer response.Body.Close()
-
-	fmt.Print(channelResp)
-
+	go fn("", chanBody)
+	fmt.Println(<-chanBody) // regular response
+	fmt.Println(<-chanBody) // persistency check response
 	// Output:
-	// ServerOK!
+	// ThisIsReST
+	// FooBar1
 }
 
 func TestEmptyHandler(t *testing.T) {
